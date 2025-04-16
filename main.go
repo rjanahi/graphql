@@ -1,6 +1,8 @@
 package main
 
 import (
+	a "graphql/backend/auth"
+	g "graphql/backend/graph"
 	"log"
 	"net/http"
 
@@ -14,8 +16,8 @@ func main() {
 	}
 
 	http.Handle("/", http.FileServer(http.Dir("./public")))
-	http.HandleFunc("/api/login", loginHandler)
-	http.HandleFunc("/api/query", graphqlHandler)
+	http.HandleFunc("/api/login", a.LoginHandler)
+	http.HandleFunc("/api/query", g.GraphqlHandler)
 
 	log.Println("Server started on http://localhost:8888")
 	log.Fatal(http.ListenAndServe(":8888", nil))

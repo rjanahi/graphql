@@ -1,19 +1,24 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-  }
-  form {
-    display: flex;
-    flex-direction: column;
-    width: 200px;
-  }
-  input, button {
-    margin-top: 10px;
-  }
-  svg rect, svg circle {
-    transition: all 0.3s ease;
-  }
-  svg rect:hover {
-    fill: orange;
-  }
-  
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+}
+
+input,
+button {
+  margin-top: 10px;
+}
+
+svg rect,
+svg circle {
+  transition: all 0.3s ease;
+}
+
+svg rect:hover {
+  fill: orange;
+}

@@ -1,4 +1,4 @@
-package main
+package graph
 
 import (
 	"io"
@@ -7,7 +7,7 @@ import (
 	"bytes"
 )
 
-func graphqlHandler(w http.ResponseWriter, r *http.Request) {
+func GraphqlHandler(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get("Authorization")
 	body, _ := io.ReadAll(r.Body)
 
