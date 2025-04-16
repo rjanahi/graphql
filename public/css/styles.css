@@ -40,13 +40,30 @@ button:hover {
 }
 
 .graphs-container {
-  display: flex; /* Use Flexbox for layout */
-  justify-content: center; /* Center the graphs */
-  gap: 20px; /* Space between the graphs */
-  width: 100%; /* Full width container */
-  margin-top: 60px; /* Space above the graphs */
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: center;
+}
+
+.graph-wrapper {
+  width: 100%;
+  max-width: 900px; /* or 100vw if you want full screen width */
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.graph-wrapper svg {
+  display: block;
+  min-width: 100%; /* allow horizontal overflow */
 }
 
 svg {
   flex: 1; /* Allow SVGs to grow equally */
+}
+
+svg rect:hover {
+  fill: orange;
 }

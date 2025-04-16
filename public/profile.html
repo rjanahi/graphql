@@ -9,9 +9,23 @@
     <button onclick="logout()">Logout</button>
   </div>
   <div id="userInfo"></div>
+  <div id="xpInfo"></div>
   <div class="graphs-container">
-    <svg id="graph1" width="250" height="200"></svg>
-    <svg id="graph2" width="250" height="200"></svg>
+    <h5>Categorized XP (logarithmic scale)</h5>
+    <div class="graph-wrapper">
+      <svg id="graph1"></svg>
+    </div>
+    
+    <h5>User Skills</h5>
+    <div class="graph-wrapper">
+      <svg id="graph2"></svg>
+    </div>
+
+    <h5>Pass/Fail Ratio</h5>
+    <div class="graph-wrapper">
+      <svg id="graph3"></svg>
+    </div>
+    
   </div>
   <script src="js/graphql.js"></script>
   <script src="js/profile.js"></script>
