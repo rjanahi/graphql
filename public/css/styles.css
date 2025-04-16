@@ -1,24 +1,52 @@
 body {
   font-family: Arial, sans-serif;
   margin: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 form {
   display: flex;
   flex-direction: column;
-  width: 200px;
+  width: 300px; /* Increased width */
+  margin-bottom: 20px;
 }
 
-input,
-button {
+input, button {
   margin-top: 10px;
+  padding: 10px; /* Added padding for better spacing */
+  border: 1px solid #ccc;
+  border-radius: 4px; /* Rounded corners */
 }
 
-svg rect,
-svg circle {
-  transition: all 0.3s ease;
+.logout-container {
+  position: absolute; /* Position it relative to the nearest positioned ancestor */
+  top: 20px; /* Distance from the top */
+  right: 20px; /* Distance from the right */
 }
 
-svg rect:hover {
-  fill: orange;
+button {
+  background-color: #007BFF; /* Button color */
+  color: white;
+  border: none;
+  padding: 10px 15px; /* Padding for the button */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+
+.graphs-container {
+  display: flex; /* Use Flexbox for layout */
+  justify-content: center; /* Center the graphs */
+  gap: 20px; /* Space between the graphs */
+  width: 100%; /* Full width container */
+  margin-top: 60px; /* Space above the graphs */
+}
+
+svg {
+  flex: 1; /* Allow SVGs to grow equally */
 }

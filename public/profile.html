@@ -5,10 +5,14 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <button onclick="logout()">Logout</button>
+  <div class="logout-container">
+    <button onclick="logout()">Logout</button>
+  </div>
   <div id="userInfo"></div>
-  <svg id="graph1" width="500" height="200"></svg>
-  <svg id="graph2" width="500" height="200"></svg>
+  <div class="graphs-container">
+    <svg id="graph1" width="250" height="200"></svg>
+    <svg id="graph2" width="250" height="200"></svg>
+  </div>
   <script src="js/graphql.js"></script>
   <script src="js/profile.js"></script>
 </body>
