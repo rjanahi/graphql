@@ -21,7 +21,7 @@ async function loadProfile() {
     }
   }`;
 
-  const xpQuery = `{
+  const xpQuery = ` {
     transaction(
       where: {
         _and: [
@@ -40,14 +40,24 @@ async function loadProfile() {
     }
   }`;
 
+  const xpTableQuery = `{
+    transaction(
+      where: {
+        type: { _eq: "xp" },
+        path: { _like: "/bahrain/bh-module/%" }
+      },
+      order_by: { createdAt: asc }
+    ) {
+      amount
+      createdAt
+      object {
+        name
+      }
+    }
+  }`;
+
   const auditRatioQuery = `{
     user {
-      id
-      login
-      email
-      campus
-      firstName
-      lastName
       auditRatio
       totalUp
       totalDown
@@ -56,8 +66,9 @@ async function loadProfile() {
 
   const userData = await fetchData(userQuery);
   const auditData = await fetchData(auditRatioQuery);
-  const xpResult = await fetchData(xpQuery);
-  const xpTransactions = xpResult.data.transaction;
+  const xpResult = await fetchData(xpTableQuery);
+  const xpResult2 = await fetchData(xpQuery);
+
 
   // Map XP transactions into format expected by drawGraphs()
   const xpData = xpResult.data.transaction
@@ -69,16 +80,27 @@ async function loadProfile() {
   }))
   .sort((a, b) => b.createdAt - a.createdAt); // sort ascending
 
-  const xpProgressionData = [];
-let cumulativeXP = 0;
+  const xpData2 = xpResult2.data.transaction
+  .map((tx) => ({
+    amount: tx.amount,
+    date: new Date(tx.createdAt).toLocaleDateString(),
+    createdAt: new Date(tx.createdAt), // keep raw date for sorting
+    project: tx.object?.name || "Unnamed"
+  }))
 
-xpData.forEach((entry) => {
-  cumulativeXP += entry.amount;
-  xpProgressionData.push({
-    date: entry.date,
-    total: cumulativeXP
+  const xpProgressionData = [];
+  let cumulativeXP = 0;
+  
+  xpData2.forEach((entry) => {
+    cumulativeXP += entry.amount;
+    xpProgressionData.push({
+      date: entry.date,
+      total: cumulativeXP,
+      createdAt: entry.createdAt  // store raw date
+    });
   });
-});
+  
+  const sorted = xpProgressionData.sort((a, b) => a.total - b.total);
 
   const user = userData.data.user[0];
   document.getElementById(
@@ -96,7 +118,7 @@ xpData.forEach((entry) => {
 
   drawDoneRecievedChart(totalUp, totalDown, totalRatio);
   drawXpTable(xpData);
-  drawXpProgression(xpProgressionData);
+  drawXpProgression(sorted);
 }
 
 // function drawGraphs(xpData) {
