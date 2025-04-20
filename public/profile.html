@@ -11,19 +11,27 @@
   <div id="userInfo"></div>
   <div id="xpInfo"></div>
   <div class="graphs-container">
-    <h5>Categorized XP (logarithmic scale)</h5>
-    <div class="graph-wrapper">
-      <svg id="graph1"></svg>
-    </div>
+     <h5>Categorized XP</h5>
+     <table id="xpTable"  style="border-collapse: collapse; margin-top: 20px;">
+      <thead>
+        <tr>
+          <th style="padding: 8px;">Project</th>
+          <th style="padding: 8px;">XP</th>
+          <th style="padding: 8px;">Date</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
     
-    <h5>User Skills</h5>
+    <h5>XP progression</h5>
     <div class="graph-wrapper">
       <svg id="graph2"></svg>
     </div>
 
-    <h5>Pass/Fail Ratio</h5>
+    <h5>Audit Ratio</h5>
     <div class="graph-wrapper">
       <svg id="graph3"></svg>
+      <h2 id="ratio"></h2>
     </div>
     
   </div>
