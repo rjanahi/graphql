@@ -44,6 +44,7 @@ button:hover {
   flex-direction: column;
   gap: 40px;
   align-items: center;
+  overflow: visible;
 }
 
 .graph-wrapper {
@@ -66,4 +67,47 @@ svg {
 
 svg rect:hover {
   fill: orange;
+}
+
+.page-wrapper {
+  padding: 0 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.graphs-container h5 {
+  margin: 0;
+  padding-bottom: 10px;
+  color: #ccc;
+  font-weight: normal;
+  font-size: 16px;
+}
+
+:root {
+  --card-bg: #1a1a1a;
+  --text-light: #e0e0e0;
+  --text-dim: #aaa;
+  --accent-yellow: #ffc107;
+}
+
+.card {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.card svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+table {
+  color: #fff; /* or any light color */
 }

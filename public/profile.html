@@ -8,10 +8,13 @@
   <div class="logout-container">
     <button onclick="logout()">Logout</button>
   </div>
+  <div class="page-wrapper">
   <div id="userInfo"></div>
   <div id="xpInfo"></div>
   <div class="graphs-container">
-     <h5>Categorized XP</h5>
+    
+    <div class="card">
+    <h5>Categorized XP</h5>
      <table id="xpTable"  style="border-collapse: collapse; margin-top: 20px;">
       <thead>
         <tr>
@@ -22,18 +25,25 @@
       </thead>
       <tbody></tbody>
     </table>
+    <button id="toggleRowsBtn" style="margin-top: 10px;">Show More</button>
+    </div>
     
+    <div class="card">
     <h5>XP progression</h5>
     <div class="graph-wrapper">
       <svg id="graph2"></svg>
     </div>
-
+    </div>
+    
+    <div class="card">
     <h5>Audit Ratio</h5>
     <div class="graph-wrapper">
       <svg id="graph3"></svg>
       <h2 id="ratio"></h2>
     </div>
+    </div>
     
+  </div>
   </div>
   <script src="js/graphql.js"></script>
   <script src="js/profile.js"></script>

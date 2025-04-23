@@ -261,7 +261,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
     );
     label.setAttribute("x", 0);
     label.setAttribute("y", y + barHeight + 5);
-    label.setAttribute("fill", "#000000");
+    label.setAttribute("fill", "#fff");
     label.setAttribute("font-size", "14px");
     label.setAttribute("font-family", "sans-serif");
     label.textContent = item.label;
@@ -283,7 +283,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
     );
     valueText.setAttribute("x", width - 10 + xOffset);
     valueText.setAttribute("y", y + barHeight + 5);
-    valueText.setAttribute("fill", "#000000");
+    valueText.setAttribute("fill", "#fff");
     valueText.setAttribute("font-size", "14px");
     valueText.setAttribute("font-family", "monospace");
     valueText.setAttribute("text-anchor", "end");
@@ -340,7 +340,7 @@ function drawXpProgression(data) {
     label.setAttribute("y", y + 5);
     label.setAttribute("text-anchor", "end");
     label.setAttribute("font-size", "12px");
-    label.setAttribute("fill", "#555");
+    label.setAttribute("fill", "#fff");
     label.textContent = `${(yVal / 1000).toFixed(1)} kB`;
     svg.appendChild(label);
   }
