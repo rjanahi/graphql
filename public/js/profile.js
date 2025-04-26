@@ -12,6 +12,8 @@ async function fetchData(query) {
 
   return await res.json();
 }
+let xpDataGlobal = []; // to store full data
+let visibleRows = 10;  // number of rows to initially show
 
 async function loadProfile() {
   const userQuery = `{
@@ -204,10 +206,16 @@ async function loadProfile() {
 // }
 
 function drawXpTable(data) {
-  const tbody = document.getElementById("xpTable").querySelector("tbody");
-  tbody.innerHTML = "";
+  xpDataGlobal = data; // save all data
+  renderXpRows();
+}
 
-  data.forEach((item) => {
+function renderXpRows() {
+  const tbody = document.getElementById("xpTable").querySelector("tbody");
+  tbody.innerHTML = ""; // clear table
+
+  const slicedData = xpDataGlobal.slice(0, visibleRows);
+  slicedData.forEach((item) => {
     const row = document.createElement("tr");
 
     const projectCell = document.createElement("td");
@@ -215,8 +223,8 @@ function drawXpTable(data) {
     projectCell.style.padding = "8px";
 
     const xpCell = document.createElement("td");
-    const kb = (item.amount / 1000).toFixed(1);
-    xpCell.textContent = `${kb} kB`;
+    const kb = item.amount / 1000;
+    xpCell.textContent = kb < 1 ? `${item.amount} B` : `${kb.toFixed(1)} kB`;
     xpCell.style.padding = "8px";
 
     const dateCell = document.createElement("td");
@@ -228,6 +236,16 @@ function drawXpTable(data) {
     row.appendChild(dateCell);
     tbody.appendChild(row);
   });
+
+  // Toggle button visibility and text
+  const toggleBtn = document.getElementById("toggleRowsBtn");
+  if (xpDataGlobal.length <= 10) {
+    toggleBtn.style.display = "none";
+  } else {
+    toggleBtn.style.display = "block";
+    toggleBtn.textContent =
+      visibleRows >= xpDataGlobal.length ? "Collapse" : "Show More";
+  }
 }
 
 
@@ -419,11 +437,21 @@ function drawXpProgression(data) {
   svg.appendChild(yAxis);
 }
 
-
-
 function logout() {
   localStorage.removeItem("jwt");
   window.location.href = "/index.html";
 }
+
+document.getElementById("toggleRowsBtn").addEventListener("click", () => {
+  if (visibleRows >= xpDataGlobal.length) {
+    // Collapse back to 10
+    visibleRows = 10;
+  } else {
+    // Show 10 more
+    visibleRows += 10;
+  }
+  renderXpRows();
+});
+
 
 loadProfile();
