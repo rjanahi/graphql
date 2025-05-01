@@ -14,7 +14,8 @@ form {
   margin-bottom: 20px;
 }
 
-input, button {
+input,
+button {
   margin-top: 10px;
   padding: 10px; /* Added padding for better spacing */
   border: 1px solid #ccc;
@@ -25,27 +26,30 @@ input, button {
   position: absolute; /* Position it relative to the nearest positioned ancestor */
   top: 20px; /* Distance from the top */
   right: 20px; /* Distance from the right */
+  margin-bottom: 10px;
 }
 
 button {
-  background-color: #007BFF; /* Button color */
+  background-color: #007bff; /* Button color */
   color: white;
   border: none;
   padding: 10px 15px; /* Padding for the button */
   border-radius: 4px; /* Rounded corners */
   cursor: pointer;
+  box-shadow: 0 0 8px rgb(159, 142, 255);
 }
 
 button:hover {
   background-color: #0056b3; /* Darker shade on hover */
 }
 
-#userInfo{
+#userInfo {
+  display: ruby;
   color: white;
 }
+
 .graphs-container {
   display: flex;
-  flex-direction: column;
   gap: 40px;
   align-items: center;
   overflow: visible;
@@ -55,7 +59,7 @@ button:hover {
   width: 100%;
   max-width: 900px; /* or 100vw if you want full screen width */
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
   padding-bottom: 10px;
   border-bottom: 1px solid #ccc;
 }
@@ -70,7 +74,7 @@ svg {
 }
 
 svg rect:hover {
-  fill: orange;
+  fill: rgb(255, 255, 255);
 }
 
 .page-wrapper {
@@ -96,14 +100,14 @@ svg rect:hover {
 }
 
 .card {
+  margin-top: 35px;
   background-color: var(--card-bg);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 8px rgb(159, 142, 255);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .card svg {
@@ -112,6 +116,28 @@ svg rect:hover {
   height: auto;
 }
 
+.cardUser {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 70px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 8px rgb(159, 142, 255);
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+}
+
+.user-container {
+  display: flex;
+  width: -webkit-fill-available;
+  gap: 50%;
+}
+
 table {
   color: #fff; /* or any light color */
+}
+
+.small {
+  float: right;
 }

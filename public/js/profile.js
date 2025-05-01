@@ -13,15 +13,16 @@ async function fetchData(query) {
   return await res.json();
 }
 let xpDataGlobal = []; // to store full data
-let visibleRows = 10;  // number of rows to initially show
+let visibleRows = 10; // number of rows to initially show
 
 async function loadProfile() {
-  const userQuery = `{
-    user {
-      id
-      login
-    }
-  }`;
+  const userQuery = `       {               user {
+                            id
+                            login
+                            email
+                          firstName
+                          lastName
+}}`;
 
   const xpQuery = ` {
     transaction(
@@ -71,45 +72,48 @@ async function loadProfile() {
   const xpResult = await fetchData(xpTableQuery);
   const xpResult2 = await fetchData(xpQuery);
 
-
   // Map XP transactions into format expected by drawGraphs()
   const xpData = xpResult.data.transaction
-  .map((tx) => ({
-    amount: tx.amount,
-    date: new Date(tx.createdAt).toLocaleDateString(),
-    createdAt: new Date(tx.createdAt), // keep raw date for sorting
-    project: tx.object?.name || "Unnamed"
-  }))
-  .sort((a, b) => b.createdAt - a.createdAt); // sort ascending
+    .map((tx) => ({
+      amount: tx.amount,
+      date: new Date(tx.createdAt).toLocaleDateString(),
+      createdAt: new Date(tx.createdAt), // keep raw date for sorting
+      project: tx.object?.name || "Unnamed",
+    }))
+    .sort((a, b) => b.createdAt - a.createdAt); // sort ascending
 
-  const xpData2 = xpResult2.data.transaction
-  .map((tx) => ({
+  const xpData2 = xpResult2.data.transaction.map((tx) => ({
     amount: tx.amount,
     date: new Date(tx.createdAt).toLocaleDateString(),
     createdAt: new Date(tx.createdAt), // keep raw date for sorting
-    project: tx.object?.name || "Unnamed"
-  }))
+    project: tx.object?.name || "Unnamed",
+  }));
 
   const xpProgressionData = [];
   let cumulativeXP = 0;
-  
+
   xpData2.forEach((entry) => {
     cumulativeXP += entry.amount;
     xpProgressionData.push({
       date: entry.date,
       total: cumulativeXP,
-      createdAt: entry.createdAt  // store raw date
+      createdAt: entry.createdAt, // store raw date
     });
   });
-  
+
   const sorted = xpProgressionData.sort((a, b) => a.total - b.total);
 
   const user = userData.data.user[0];
-  document.getElementById(
-    "userInfo"
-  ).innerText = `ID: ${user.id}, Login: ${user.login}`;
-
   const auditUser = auditData.data.user[0];
+
+console.log(sorted)
+  // Calculate total XP
+  const totalXP = sorted[sorted.length-1].total;
+
+  document.getElementById("fullName").innerHTML =
+    "Welcome, " + user.firstName + " " + user.lastName + "! ";
+  document.getElementById("username").innerHTML = "#" + user.login;
+  document.getElementById("totalXp").innerHTML = (totalXP/ 1000).toFixed(1)+ " KB";
 
   const totalUp = auditUser.totalUp || 0;
   const totalDown = auditUser.totalDown || 0;
@@ -248,7 +252,6 @@ function renderXpRows() {
   }
 }
 
-
 function drawDoneRecievedChart(gave, received, ratioT) {
   const svg = document.getElementById("graph3");
   const ratioText = document.getElementById("ratio");
@@ -265,8 +268,8 @@ function drawDoneRecievedChart(gave, received, ratioT) {
   svg.setAttribute("height", 2 * gap);
 
   const data = [
-    { label: "Done", value: gave, color: "#4caf50", arrow: "↑" },
-    { label: "Received", value: received, color: "#f44336", arrow: "↓" },
+    { label: "Done", value: gave, color: "#007bff", arrow: "↑" },
+    { label: "Received", value: received, color: "rgb(167, 84, 140)", arrow: "↓" },
   ];
 
   data.forEach((item, i) => {
@@ -317,8 +320,8 @@ function drawDoneRecievedChart(gave, received, ratioT) {
   else if (ratioT > 1.1) message = "Looking good!";
 
   ratioText.innerHTML = `
-    <span style="font-size: 48px; color: #f0c000;">${roundedRatio}</span><br>
-    <span style="color: #f0c000; font-size: 16px;">${message}</span>
+    <span style="font-size: 48px; color:rgb(255, 255, 255);">${roundedRatio}</span><br>
+    <span style="color:rgb(255, 255, 255); font-size: 16px;">${message}</span>
   `;
 }
 
@@ -333,7 +336,7 @@ function drawXpProgression(data) {
 
   const padding = 50;
 
-  const maxXP = Math.max(...data.map(d => d.total));
+  const maxXP = Math.max(...data.map((d) => d.total));
   const xScale = (width - 2 * padding) / (data.length - 1);
   const yScale = (height - 2 * padding) / maxXP;
 
@@ -353,7 +356,10 @@ function drawXpProgression(data) {
     svg.appendChild(line);
 
     // Y axis label
-    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    const label = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "text"
+    );
     label.setAttribute("x", padding - 10);
     label.setAttribute("y", y + 5);
     label.setAttribute("text-anchor", "end");
@@ -362,7 +368,7 @@ function drawXpProgression(data) {
     label.textContent = `${(yVal / 1000).toFixed(1)} kB`;
     svg.appendChild(label);
   }
-
+  
   // X axis date labels
   const dateInterval = Math.ceil(data.length / 6);
   data.forEach((d, i) => {
@@ -406,14 +412,20 @@ function drawXpProgression(data) {
     const x = padding + i * xScale;
     const y = height - padding - d.total * yScale;
 
-    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    const circle = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "circle"
+    );
     circle.setAttribute("cx", x);
     circle.setAttribute("cy", y);
     circle.setAttribute("r", 4);
-    circle.setAttribute("fill", "#ff9800");
+    circle.setAttribute("fill", "#a26cb8");
     svg.appendChild(circle);
 
-    const tooltip = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    const tooltip = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "title"
+    );
     tooltip.textContent = `${d.date}: ${(d.total / 1000).toFixed(1)} kB`;
     circle.appendChild(tooltip);
   });
@@ -452,6 +464,5 @@ document.getElementById("toggleRowsBtn").addEventListener("click", () => {
   }
   renderXpRows();
 });
-
 
 loadProfile();

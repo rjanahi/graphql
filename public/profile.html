@@ -8,9 +8,24 @@
     <div class="logout-container">
       <button onclick="logout()">Logout</button>
     </div>
+    <br>
     <div class="page-wrapper">
-      <div id="userInfo"></div>
       <div class="graphs-container">
+        <div class="cardUser">
+          <div id="userInfo">
+            <h1 id="fullName"></h1><small class="small" id="username"></small>
+            <div class="user-container">
+            <!-- <div class="card">
+              <h5>Level</h5>
+            </div> -->
+            <div class="card">
+              <h5>Total Xp</h5>
+              <h1 id="totalXp"></h1>
+            </div>
+            
+          </div>
+          </div>
+        </div>
         <div class="card">
           <h5>Audit Ratio</h5>
           <div class="graph-wrapper">
@@ -18,7 +33,8 @@
             <h2 id="ratio"></h2>
           </div>
         </div>
-
+      </div>
+      <div class="graphs-container">
         <div class="card">
           <h5>Categorized XP</h5>
           <table
