@@ -108,12 +108,14 @@ svg rect:hover {
   box-shadow: 0 0 8px rgb(159, 142, 255);
   display: flex;
   flex-direction: column;
+  overflow-x: auto;
 }
 
 .card svg {
   display: block;
   max-width: 100%;
   height: auto;
+  overflow-x: auto;
 }
 
 .cardUser {
@@ -140,4 +142,20 @@ table {
 
 .small {
   float: right;
+}
+
+.tableCard{
+  margin-top: 35px;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 8px rgb(159, 142, 255);
+  display: flex;
+  flex-direction: column;
+  border-collapse: collapse; 
+  overflow-y: scroll;
+  overflow-x: auto;
+  max-height: 400px;
+  scrollbar-color: rgb(159, 142, 255) #333;
 }

@@ -218,7 +218,7 @@ function renderXpRows() {
   const tbody = document.getElementById("xpTable").querySelector("tbody");
   tbody.innerHTML = ""; // clear table
 
-  const slicedData = xpDataGlobal.slice(0, visibleRows);
+  const slicedData = xpDataGlobal;
   slicedData.forEach((item) => {
     const row = document.createElement("tr");
 
@@ -241,15 +241,6 @@ function renderXpRows() {
     tbody.appendChild(row);
   });
 
-  // Toggle button visibility and text
-  const toggleBtn = document.getElementById("toggleRowsBtn");
-  if (xpDataGlobal.length <= 10) {
-    toggleBtn.style.display = "none";
-  } else {
-    toggleBtn.style.display = "block";
-    toggleBtn.textContent =
-      visibleRows >= xpDataGlobal.length ? "Collapse" : "Show More";
-  }
 }
 
 function drawDoneRecievedChart(gave, received, ratioT) {
@@ -454,15 +445,6 @@ function logout() {
   window.location.href = "/index.html";
 }
 
-document.getElementById("toggleRowsBtn").addEventListener("click", () => {
-  if (visibleRows >= xpDataGlobal.length) {
-    // Collapse back to 10
-    visibleRows = 10;
-  } else {
-    // Show 10 more
-    visibleRows += 10;
-  }
-  renderXpRows();
-});
+
 
 loadProfile();

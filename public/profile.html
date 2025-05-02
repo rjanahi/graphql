@@ -8,22 +8,22 @@
     <div class="logout-container">
       <button onclick="logout()">Logout</button>
     </div>
-    <br>
+    <br />
     <div class="page-wrapper">
       <div class="graphs-container">
         <div class="cardUser">
           <div id="userInfo">
-            <h1 id="fullName"></h1><small class="small" id="username"></small>
+            <h1 id="fullName"></h1>
+            <small class="small" id="username"></small>
             <div class="user-container">
-            <!-- <div class="card">
+              <!-- <div class="card">
               <h5>Level</h5>
             </div> -->
-            <div class="card">
-              <h5>Total Xp</h5>
-              <h1 id="totalXp"></h1>
+              <div class="card">
+                <h5>Total Xp</h5>
+                <h1 id="totalXp"></h1>
+              </div>
             </div>
-            
-          </div>
           </div>
         </div>
         <div class="card">
@@ -35,12 +35,9 @@
         </div>
       </div>
       <div class="graphs-container">
-        <div class="card">
+        <div class="tableCard">
           <h5>Categorized XP</h5>
-          <table
-            id="xpTable"
-            style="border-collapse: collapse; margin-top: 20px"
-          >
+          <table id="xpTable">
             <thead>
               <tr>
                 <th style="padding: 8px">Project</th>
@@ -50,7 +47,6 @@
             </thead>
             <tbody></tbody>
           </table>
-          <button id="toggleRowsBtn" style="margin-top: 10px">Show More</button>
         </div>
 
         <div class="card">
