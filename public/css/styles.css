@@ -159,3 +159,13 @@ table {
   max-height: 400px;
   scrollbar-color: rgb(159, 142, 255) #333;
 }
+
+.error-message, h2, #errorMsg {
+  color: white;
+
+}
+
+.error-message a {
+  color: #007bff;
+
+}
