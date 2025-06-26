@@ -21,7 +21,7 @@ func main() {
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./public/css/"))))
 	http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("./public/js/"))))
 	http.Handle("/errorPages/", http.StripPrefix("/errorPages/", http.FileServer(http.Dir("./public/errorPages/"))))
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", a.WithCORS(func(w http.ResponseWriter, r *http.Request) {
 		filePath := "./public" + r.URL.Path
 		if r.URL.Path == "/" {
 			filePath = "./public/index.html"
@@ -34,12 +34,12 @@ func main() {
 		}
 	
 		http.ServeFile(w, r, filePath)
-	})
+	}))
 	
 
 	// API routes
-	http.HandleFunc("/api/login", a.LoginHandler)
-	http.HandleFunc("/api/query", g.GraphqlHandler)
+	http.HandleFunc("/api/login", a.WithCORS(a.LoginHandler))
+	http.HandleFunc("/api/query", a.WithCORS(g.GraphqlHandler))
 
 	// HTML page routes
 	http.HandleFunc("/index.html", serveTemplate("index.html"))

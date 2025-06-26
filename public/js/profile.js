@@ -1,7 +1,7 @@
 async function fetchData(query) {
   const token = localStorage.getItem("jwt");
 
-  const res = await fetch("/api/query", {
+  const res = await fetch("http://localhost:8888/api/query", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
