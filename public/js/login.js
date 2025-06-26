@@ -8,7 +8,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     formData.append("password", password);
   
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch("http://localhost:8888/api/login", {
         method: "POST",
         body: formData,
       });

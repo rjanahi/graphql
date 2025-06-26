@@ -16,46 +16,14 @@ let xpDataGlobal = []; // to store full data
 let visibleRows = 10; // number of rows to initially show
 
 async function loadProfile() {
-  const userQuery = `       {               user {
-                            id
-                            login
-                            email
-                          firstName
-                          lastName
-}}`;
-
-  const xpQuery = ` {
-    transaction(
-      where: {
-        _and: [
-          { type: { _eq: "xp" } },
-          { path: { _like: "/bahrain/bh-module/%" } },
-          { path: { _nlike: "/bahrain/bh-module/piscine-js/%" } }
-        ]
-      },
-      order_by: { createdAt: asc }
-    ) {
-      amount
-      createdAt
-      object {
-        name
-      }
-    }
-  }`;
-
-  const xpTableQuery = `{
-    transaction(
-      where: {
-        type: { _eq: "xp" },
-        path: { _like: "/bahrain/bh-module/%" }
-      },
-      order_by: { createdAt: asc }
-    ) {
-      amount
-      createdAt
-      object {
-        name
-      }
+  // Queries
+  const userQuery = `{
+    user {
+      id
+      login
+      email
+      firstName
+      lastName
     }
   }`;
 
@@ -67,53 +35,138 @@ async function loadProfile() {
     }
   }`;
 
-  const userData = await fetchData(userQuery);
-  const auditData = await fetchData(auditRatioQuery);
-  const xpResult = await fetchData(xpTableQuery);
-  const xpResult2 = await fetchData(xpQuery);
+  // Step 1: Get the oldest normal project date
+  const oldestResult = await fetchData(`{
+    transaction(
+      where: {
+        _and: [
+          { type: { _eq: "xp" } },
+          { path: { _like: "/bahrain/bh-module/%" } },
+          { path: { _nlike: "/bahrain/bh-module/checkpoint/%" } }
+        ]
+      },
+      order_by: { createdAt: asc },
+      limit: 1
+    ) {
+      createdAt
+    }
+  }`);
 
-  // Map XP transactions into format expected by drawGraphs()
-  const xpData = xpResult.data.transaction
-    .map((tx) => ({
-      amount: tx.amount,
-      date: new Date(tx.createdAt).toLocaleDateString(),
-      createdAt: new Date(tx.createdAt), // keep raw date for sorting
-      project: tx.object?.name || "Unnamed",
-    }))
-    .sort((a, b) => b.createdAt - a.createdAt); // sort ascending
+  const oldestDate = oldestResult.data.transaction[0]?.createdAt;
+  console.log("Oldest Project Date:", oldestDate);
 
-  const xpData2 = xpResult2.data.transaction.map((tx) => ({
+  // Step 2: Get normal projects (non-checkpoints)
+  const xpTableResult = await fetchData(`{
+    transaction(
+      where: { 
+        _and: [
+          { type: { _eq: "xp" } },
+          { path: { _like: "/bahrain/bh-module/%" } },
+          { path: { _nlike: "/bahrain/bh-module/checkpoint/%" } },
+          { path: { _nlike: "/bahrain/bh-module/piscine-js/%" } }
+        ]
+      }
+    ) {
+      amount
+      createdAt
+      object {
+        name
+        type
+      }
+    }
+  }`);
+
+  const normalProjects = xpTableResult.data.transaction.map(tx => ({
     amount: tx.amount,
+    createdAt: new Date(tx.createdAt),
     date: new Date(tx.createdAt).toLocaleDateString(),
-    createdAt: new Date(tx.createdAt), // keep raw date for sorting
     project: tx.object?.name || "Unnamed",
+    type:tx.object?.type || "Untyped",
   }));
 
-  const xpProgressionData = [];
-  let cumulativeXP = 0;
+  console.log("Normal:" , normalProjects)
+  // Step 3: Get checkpoints after oldest date
+  let checkpointProjects = [];
+  if (oldestDate) {
+    const checkpointResult = await fetchData(`{
+      transaction(
+        where: {
+          _and: [
+            { type: { _eq: "xp" } },
+            { path: { _like: "/bahrain/bh-module/checkpoint/%" } },
+            { createdAt: { _gt: "${oldestDate}" } }
+          ]
+        }
+      ) {
+        amount
+        createdAt
+        object {
+          name
+          type
+        }
+      }
+    }`);
 
-  xpData2.forEach((entry) => {
-    cumulativeXP += entry.amount;
-    xpProgressionData.push({
-      date: entry.date,
-      total: cumulativeXP,
-      createdAt: entry.createdAt, // store raw date
-    });
-  });
+    checkpointProjects = checkpointResult.data.transaction.map(tx => ({
+      amount: tx.amount,
+      createdAt: new Date(tx.createdAt),
+      date: new Date(tx.createdAt).toLocaleDateString(),
+      project: tx.object?.name || "Unnamed",
+      type: tx.object?.type||"Untyped",
+    }));
+  }
 
-  const sorted = xpProgressionData.sort((a, b) => a.total - b.total);
+  // Step 4: Merge and sort both datasets
+  const mergedData = [...normalProjects, ...checkpointProjects].sort(
+    (a, b) => b.createdAt - a.createdAt
+  );
+
+  console.log("Merged XP Table:", mergedData);
+
+  // Step 5: Get user data and audit stats
+  const [userData, auditData] = await Promise.all([
+    fetchData(userQuery),
+    fetchData(auditRatioQuery),
+  ]);
 
   const user = userData.data.user[0];
   const auditUser = auditData.data.user[0];
 
-console.log(sorted)
-  // Calculate total XP
-  const totalXP = sorted[sorted.length-1].total;
+  // Step 6: XP progression calculation
+  let cumulativeXP = 0;
+  let totalProject =0;
+  let totalExercise =0;
+  const xpProgressionData = mergedData
+    .slice() // clone array
+    .sort((a, b) => a.createdAt - b.createdAt) // sort oldest -> newest
+    .map((entry) => {
+      cumulativeXP += entry.amount;
+      if (entry.type == "project"||entry.type == "piscine"){
+        totalProject++
+      }else if(entry.type == "exercise"){
+        totalExercise++
+      }
+      console.log(entry.type);
+      return {
+        date: entry.date,
+        total: cumulativeXP,
+        createdAt: entry.createdAt,
+      };
+    });
 
-  document.getElementById("fullName").innerHTML =
-    "Welcome, " + user.firstName + " " + user.lastName + "! ";
-  document.getElementById("username").innerHTML = "#" + user.login;
-  document.getElementById("totalXp").innerHTML = (totalXP/ 1000).toFixed(1)+ " KB";
+  // const totalProject = mergedData.length;
+  console.log("Total Projects:", totalProject);
+  console.log("Total Exercise:", totalExercise);
+
+  // Step 7: Update DOM
+  
+  document.getElementById("totalProjects").innerHTML = totalProject;
+  document.getElementById("totalExcercises").innerHTML = totalExercise;
+  document.getElementById("fullName").innerHTML = `Welcome, ${user.firstName} ${user.lastName}!`;
+  document.getElementById("username").innerHTML = `#${user.login}`;
+
+  const totalXP = xpProgressionData.at(-1)?.total || 0;
+  document.getElementById("totalXp").innerHTML = `${(totalXP / 1000).toFixed(1)} KB`;
 
   const totalUp = auditUser.totalUp || 0;
   const totalDown = auditUser.totalDown || 0;
@@ -122,92 +175,12 @@ console.log(sorted)
   console.log("Total Up:", totalUp);
   console.log("Total Down:", totalDown);
 
+  // Step 8: Draw charts/tables
   drawDoneRecievedChart(totalUp, totalDown, totalRatio);
-  drawXpTable(xpData);
-  drawXpProgression(sorted);
+  drawXpTable(mergedData);
+  drawXpProgression(xpProgressionData);
 }
 
-// function drawGraphs(xpData) {
-//   const svg1 = document.getElementById("graph1");
-//   svg1.innerHTML = "";
-
-//   const amounts = xpData.map((d) => d.amount);
-//   const maxAmount = Math.max(...amounts);
-//   const maxLog = Math.log10(maxAmount + 1);
-
-//   const svgHeight = 300;
-//   svg1.setAttribute("height", svgHeight);
-//   const barWidth = 20;
-//   const barSpacing = 5;
-//   const svgWidth = xpData.length * (barWidth + barSpacing);
-//   svg1.setAttribute("width", svgWidth);
-
-//   const xAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
-//   xAxis.setAttribute("x1", 0);
-//   xAxis.setAttribute("y1", svgHeight);
-//   xAxis.setAttribute("x2", svgWidth);
-//   xAxis.setAttribute("y2", svgHeight);
-//   xAxis.setAttribute("stroke", "black");
-//   svg1.appendChild(xAxis);
-
-//   const yAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
-//   yAxis.setAttribute("x1", 0);
-//   yAxis.setAttribute("y1", 0);
-//   yAxis.setAttribute("x2", 0);
-//   yAxis.setAttribute("y2", svgHeight);
-//   yAxis.setAttribute("stroke", "black");
-//   svg1.appendChild(yAxis);
-
-//   xpData.forEach((data, index) => {
-//     const logAmount = Math.log10(data.amount + 1);
-//     const barHeight = (logAmount / maxLog) * svgHeight;
-
-//     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-//     rect.setAttribute("x", index * (barWidth + barSpacing));
-//     rect.setAttribute("y", svgHeight - barHeight);
-//     rect.setAttribute("width", barWidth);
-//     rect.setAttribute("height", barHeight);
-//     rect.setAttribute("fill", "steelblue");
-
-//     // Tooltip title
-//     const tooltip = document.createElementNS(
-//       "http://www.w3.org/2000/svg",
-//       "title"
-//     );
-//     tooltip.textContent = `XP: ${data.amount} on ${data.date}`;
-//     rect.appendChild(tooltip);
-
-//     // Hover behavior
-//     rect.addEventListener("mouseover", () => {
-//       rect.setAttribute("fill", "orange");
-
-//       const hoverText = document.createElementNS(
-//         "http://www.w3.org/2000/svg",
-//         "text"
-//       );
-//       hoverText.setAttribute("class", "hover-text");
-//       hoverText.setAttribute(
-//         "x",
-//         index * (barWidth + barSpacing) + barWidth / 2
-//       );
-//       hoverText.setAttribute("y", svgHeight - barHeight - 10);
-//       hoverText.setAttribute("font-size", "14");
-//       hoverText.setAttribute("text-anchor", "middle");
-//       hoverText.setAttribute("fill", "black");
-//       hoverText.textContent = Math.round(data.amount);
-
-//       svg1.appendChild(hoverText);
-//     });
-
-//     rect.addEventListener("mouseout", () => {
-//       rect.setAttribute("fill", "steelblue");
-//       const text = svg1.querySelector("text.hover-text");
-//       if (text) svg1.removeChild(text);
-//     });
-
-//     svg1.appendChild(rect);
-//   });
-// }
 
 function drawXpTable(data) {
   xpDataGlobal = data; // save all data
@@ -240,7 +213,6 @@ function renderXpRows() {
     row.appendChild(dateCell);
     tbody.appendChild(row);
   });
-
 }
 
 function drawDoneRecievedChart(gave, received, ratioT) {
@@ -260,7 +232,12 @@ function drawDoneRecievedChart(gave, received, ratioT) {
 
   const data = [
     { label: "Done", value: gave, color: "#007bff", arrow: "↑" },
-    { label: "Received", value: received, color: "rgb(167, 84, 140)", arrow: "↓" },
+    {
+      label: "Received",
+      value: received,
+      color: "rgb(167, 84, 140)",
+      arrow: "↓",
+    },
   ];
 
   data.forEach((item, i) => {
@@ -359,7 +336,7 @@ function drawXpProgression(data) {
     label.textContent = `${(yVal / 1000).toFixed(1)} kB`;
     svg.appendChild(label);
   }
-  
+
   // X axis date labels
   const dateInterval = Math.ceil(data.length / 6);
   data.forEach((d, i) => {
@@ -444,7 +421,5 @@ function logout() {
   localStorage.removeItem("jwt");
   window.location.href = "/index.html";
 }
-
-
 
 loadProfile();

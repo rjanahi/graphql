@@ -133,7 +133,7 @@ svg rect:hover {
 .user-container {
   display: flex;
   width: -webkit-fill-available;
-  gap: 50%;
+  gap: 10%;
 }
 
 table {

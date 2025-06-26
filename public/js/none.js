@@ -1,6 +1,6 @@
 // GraphQL Query Function
 async function fetchData(query) {
-    const response = await fetch('YOUR_GRAPHQL_ENDPOINT', {
+    const response = await fetch('/api/query', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
