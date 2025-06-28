@@ -7,51 +7,44 @@ document.getElementById("loginForm")
 
 async function handleLogin(e) {
   e.preventDefault();
+  clearError();
 
   const user = document.getElementById("userOrEmail").value.trim();
   const pwd = document.getElementById("password").value;
   if (!user || !pwd) return showError("Both fields are required");
 
-  const encoded = btoa(`${user}:${pwd}`);
-
   try {
-    // 1) Perform the fetch
     const res = await fetch(SIGNIN_URL, {
       method: "POST",
       headers: {
         "Authorization": `Basic ${encoded}`,
-        "Content-Type": "application/json"    // helps avoid weird CORS preflights
+        "Content-Type": "application/json"
       }
     });
-
-    // 2) If 400/401, try to parse and show that error
     if (!res.ok) {
-      let errBody;
-      try { errBody = await res.json(); }
-      catch (_) { errBody = { error: await res.text() }; }
-      return showError(errBody.error || "Invalid credentials");
+      // … handle 400/401 …
     }
 
-    // 3) Grab the raw body as text
+    // 1) Get raw body
     const raw = await res.text();
     console.log("Raw signin response:", raw);
 
-    // 4) Try JSON.parse → extract token key, else assume raw is the JWT
+    // 2) Parse JWT out of that raw body
     let jwt;
     try {
-      const obj = JSON.parse(raw);
-      jwt = obj.token || obj.jwt || obj.accessToken;
+      const parsed = JSON.parse(raw);
+      jwt = typeof parsed === "string"
+        ? parsed
+        : parsed.token || parsed.jwt || parsed.accessToken;
     } catch {
-      // strip surrounding quotes if present
       jwt = raw.replace(/^"(.*)"$/, "$1");
     }
 
-    // 5) Validate it’s actually a three-part JWT
+    // 3) Validate format
     if (!jwt || jwt.split(".").length !== 3) {
       throw new Error(`Invalid JWT received: "${jwt}"`);
     }
 
-    // 6) Store & redirect
     console.log("Using JWT:", jwt);
     localStorage.setItem("jwt", jwt);
     window.location.href = "profile.html";
