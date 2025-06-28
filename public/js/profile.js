@@ -98,10 +98,11 @@ async function drawXpTable() {
     }));
   }
 
-  mergedData = [...normalProjects, ...checkpointProjects]
+  const mergedData = [...normalProjects, ...checkpointProjects]
     .sort((a, b) => b.createdAt - a.createdAt);
   console.log("Merged XP Data:", mergedData);
   xpDataGlobal = mergedData;
+  const data = mergedData;
   const tbody = document.querySelector("#xpTable tbody");
   tbody.innerHTML = "";
   data.forEach(item => {
