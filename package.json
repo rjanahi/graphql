@@ -1,5 +1,0 @@
-{
-  "scripts": {
-    "build:functions": "bash build.sh"
-  }
-}
