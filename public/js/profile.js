@@ -41,7 +41,7 @@ async function loadProfile() {
       createdAt
     }
   }`);
-  const oldestDate = oldestResult.data.transaction[0]?.createdAt;
+  const oldestDate = oldestResult.transaction[0]?.createdAt;
   console.log("Oldest Project Date:", oldestDate);
 
   // 2) Fetch all normal projects
@@ -62,7 +62,7 @@ async function loadProfile() {
     }
   }`);
 
-  const normalProjects = xpTableResult.data.transaction.map(tx => ({
+  const normalProjects = xpTableResult.transaction.map(tx => ({
     amount: tx.amount,
     createdAt: new Date(tx.createdAt),
     date: new Date(tx.createdAt).toLocaleDateString(),
@@ -90,7 +90,7 @@ async function loadProfile() {
       }
     }`);
 
-    checkpointProjects = checkpointResult.data.transaction.map(tx => ({
+    checkpointProjects = checkpointResult.transaction.map(tx => ({
       amount: tx.amount,
       createdAt: new Date(tx.createdAt),
       date: new Date(tx.createdAt).toLocaleDateString(),
@@ -110,8 +110,8 @@ async function loadProfile() {
     fetchGraphQL(`{ user { auditRatio totalUp totalDown } }`)
   ]);
 
-  const user = userRes.data.user[0];
-  const auditUser = auditRes.data.user[0];
+  const user = userRes.user[0];
+  const auditUser = auditRes.user[0];
 
   // 6) Calculate XP progression & counts
   let cumulativeXP = 0;
@@ -246,7 +246,7 @@ function drawXpProgression(data) {
 
   const padding = 50;
 
-  const maxXP = Math.max(...data.map((d) => d.total));
+  const maxXP = Math.max(...map((d) => d.total));
   const xScale = (width - 2 * padding) / (data.length - 1);
   const yScale = (height - 2 * padding) / maxXP;
 
