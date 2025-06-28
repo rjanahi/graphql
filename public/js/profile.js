@@ -1,6 +1,6 @@
 // profile.js
 
-const GRAPHQL_URL = "https://<DOMAIN>/api/graphql-engine/v1/graphql";
+const GRAPHQL_URL = "https://learn.reboot01.com/api/graphql-engine/v1/graphql";
 
 async function fetchGraphQL(query, variables = {}) {
   const token = localStorage.getItem("jwt");

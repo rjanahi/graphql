@@ -1,6 +1,6 @@
 // login.js
 
-const SIGNIN_URL = "https://<DOMAIN>/api/auth/signin";
+const SIGNIN_URL = "https://learn.reboot01.com/api/auth/signin";
 
 document.getElementById("loginForm").addEventListener("submit", async e => {
   e.preventDefault();
