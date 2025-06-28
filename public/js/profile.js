@@ -216,7 +216,8 @@ function drawXpProgression() {
 
   const width = 700;
   const height = 300;
-
+  svg.setAttribute("width", width);
+  svg.setAttribute("height", height);
 
   const padding = 50;
 
