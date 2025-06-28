@@ -20,13 +20,9 @@ document.getElementById("loginForm").addEventListener("submit", async e => {
       const err = await res.json().catch(() => ({}));
       return showError(err.error || "Invalid credentials");
     }
-    const text = await res.text();
-    let jwt;
-    try {
-      jwt = JSON.parse(text).token;
-    } catch {
-      jwt = text.replace(/^"(.*)"$/, "$1");
-    }
+    const payload = await res.json();
+    const jwt = payload.token;
+    if (!jwt) throw new Error("No token in response");
     console.log("JWT:", jwt);
     localStorage.setItem("jwt", jwt);
     window.location.href = "profile.html";
