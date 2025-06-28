@@ -11,7 +11,10 @@ async function handleLogin(e) {
 
   const user = document.getElementById("userOrEmail").value.trim();
   const pwd = document.getElementById("password").value;
+
   if (!user || !pwd) return showError("Both fields are required");
+
+  const encoded = btoa(`${user}:${pwd}`);
 
   try {
     const res = await fetch(SIGNIN_URL, {
