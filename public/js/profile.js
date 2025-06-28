@@ -246,7 +246,7 @@ function drawXpProgression(data) {
 
   const padding = 50;
 
-  const maxXP = Math.max(...map((d) => d.total));
+  const maxXP = Math.max(...data.map((d) => d.total));
   const xScale = (width - 2 * padding) / (data.length - 1);
   const yScale = (height - 2 * padding) / maxXP;
 
