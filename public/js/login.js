@@ -14,7 +14,7 @@ document.getElementById("loginForm").addEventListener("submit", async e => {
   const encoded = btoa(`${username}:${password}`);
 
   // 2) POST to your real SIGNIN_URL (set this in an env var at build time or inlined)
-  const SIGNIN_URL = process.env.SIGNIN_URL || "https://learn.reboo01.com/api/auth/signin";
+  const SIGNIN_URL =  "https://learn.reboo01.com/api/auth/signin";
 
   try {
     const res = await fetch(SIGNIN_URL, {

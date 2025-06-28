@@ -1,7 +1,7 @@
 // profile.js
 
 // Environment variable or default GraphQL endpoint
-const GRAPHQL_URL = process.env.GRAPHQL_URL || "https://learn.reboot01.com/graphiql";
+const GRAPHQL_URL = "https://learn.reboot01.com/graphiql";
 
 async function fetchGraphQL(query) {
   const token = localStorage.getItem("jwt");
