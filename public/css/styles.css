@@ -118,15 +118,14 @@ svg rect:hover {
   box-shadow: 0 0 8px rgb(159, 142, 255);
   display: flex;
   flex-direction: column;
-  overflow: visible;
+  overflow: auto;
   scrollbar-color: rgb(159, 142, 255) #333;
 }
 
 .card svg {
   display: block;
-  max-width: 100%;
   height: auto;
-  overflow: scroll;
+  overflow: auto;
 }
 
 .cardUser {
