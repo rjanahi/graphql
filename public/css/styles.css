@@ -67,7 +67,7 @@ button:hover {
 
 .graph-wrapper {
   max-width: 650px;
-  overflow: scroll;
+  overflow: auto;
   padding-bottom: 10px;
   border-bottom: 1px solid #ccc;
 }
@@ -75,7 +75,7 @@ button:hover {
 .graph-wrapper svg {
   display: block;
   min-width: 100%;
-  overflow: scroll;
+  overflow: auto;
 }
 
 svg {
