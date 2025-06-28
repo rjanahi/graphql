@@ -1,31 +1,32 @@
 // profile.js
 
-const GRAPHQL_URL = "https://learn.reboot01.com/api/graphql-engine/v1/graphql";
+let xpDataGlobal = []; 
+let cumulativeXP = 0;
+let totalProject = 0;
+let totalExercise = 0;
 
-async function fetchGraphQL(query, variables = {}) {
-  const token = localStorage.getItem("jwt");
-  if (!token) throw new Error("Not authenticated");
+async function loadProfile() {
+  const [userRes, auditRes] = await Promise.all([
+    fetchGraphQL(`{ user { id login email firstName lastName } }`),
+    fetchGraphQL(`{ user { auditRatio totalUp totalDown } }`)
+  ]);
 
-  const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
-    body: JSON.stringify({ query, variables })
-  });
+  const user = userRes.user[0];
+  const auditUser = auditRes.user[0];
 
-  if (!res.ok) throw new Error("GraphQL network error");
-  const { data, errors } = await res.json();
-  if (errors) throw new Error(errors.map(e => e.message).join("\n"));
-  return data;
+  document.getElementById("fullName").textContent = `Welcome, ${user.firstName} ${user.lastName}!`;
+  document.getElementById("username").textContent = `#${user.login}`;
+  document.getElementById("totalProjects").textContent = totalProject;
+  document.getElementById("totalExcercises").textContent = totalExercise;
+  const totalXP = xpDataGlobal.at(-1)?.total || 0;
+  document.getElementById("totalXp").textContent = `${(totalXP / 1000).toFixed(1)} KB`;
+
+  drawDoneRecievedChart(auditUser.totalUp, auditUser.totalDown, auditUser.auditRatio);
+  drawXpTable();
+  drawXpProgression();
 }
 
-let xpDataGlobal = []; // stored for table rendering
-
-// Main profile loader
-async function loadProfile() {
-  // 1) Fetch oldest normal-project date
+async function drawXpTable() {
   const oldestResult = await fetchGraphQL(`{
     transaction(
       where: {
@@ -44,7 +45,6 @@ async function loadProfile() {
   const oldestDate = oldestResult.transaction[0]?.createdAt;
   console.log("Oldest Project Date:", oldestDate);
 
-  // 2) Fetch all normal projects
   const xpTableResult = await fetchGraphQL(`{
     transaction(
       where: { 
@@ -71,7 +71,6 @@ async function loadProfile() {
   }));
   console.log("Normal Projects:", normalProjects);
 
-  // 3) Fetch checkpoint projects after oldest date
   let checkpointProjects = [];
   if (oldestDate) {
     const checkpointResult = await fetchGraphQL(`{
@@ -99,51 +98,10 @@ async function loadProfile() {
     }));
   }
 
-  // 4) Merge & sort
-  const mergedData = [...normalProjects, ...checkpointProjects]
+  mergedData = [...normalProjects, ...checkpointProjects]
     .sort((a, b) => b.createdAt - a.createdAt);
   console.log("Merged XP Data:", mergedData);
-
-  // 5) Fetch user & audit stats in parallel
-  const [userRes, auditRes] = await Promise.all([
-    fetchGraphQL(`{ user { id login email firstName lastName } }`),
-    fetchGraphQL(`{ user { auditRatio totalUp totalDown } }`)
-  ]);
-
-  const user = userRes.user[0];
-  const auditUser = auditRes.user[0];
-
-  // 6) Calculate XP progression & counts
-  let cumulativeXP = 0;
-  let totalProject = 0;
-  let totalExercise = 0;
-
-  const xpProgressionData = mergedData
-    .slice()
-    .sort((a, b) => a.createdAt - b.createdAt)
-    .map(entry => {
-      cumulativeXP += entry.amount;
-      if (entry.type === "project" || entry.type === "piscine") totalProject++;
-      else if (entry.type === "exercise") totalExercise++;
-      return { date: entry.date, total: cumulativeXP, createdAt: entry.createdAt };
-    });
-
-  // 7) Update DOM
-  document.getElementById("fullName").textContent = `Welcome, ${user.firstName} ${user.lastName}!`;
-  document.getElementById("username").textContent = `#${user.login}`;
-  document.getElementById("totalProjects").textContent = totalProject;
-  document.getElementById("totalExcercises").textContent = totalExercise;
-  const totalXP = xpProgressionData.at(-1)?.total || 0;
-  document.getElementById("totalXp").textContent = `${(totalXP / 1000).toFixed(1)} KB`;
-
-  drawDoneRecievedChart(auditUser.totalUp, auditUser.totalDown, auditUser.auditRatio);
-  drawXpTable(mergedData);
-  drawXpProgression(xpProgressionData);
-}
-
-/** Table rendering **/
-function drawXpTable(data) {
-  xpDataGlobal = data;
+  xpDataGlobal = mergedData;
   const tbody = document.querySelector("#xpTable tbody");
   tbody.innerHTML = "";
   data.forEach(item => {
@@ -235,7 +193,17 @@ function drawDoneRecievedChart(gave, received, ratioT) {
   `;
 }
 
-function drawXpProgression(data) {
+function drawXpProgression() {
+  const data = xpDataGlobal
+    .slice()
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .map(entry => {
+      cumulativeXP += entry.amount;
+      if (entry.type === "project" || entry.type === "piscine") totalProject++;
+      else if (entry.type === "exercise") totalExercise++;
+      return { date: entry.date, total: cumulativeXP, createdAt: entry.createdAt };
+    });
+
   const svg = document.getElementById("graph2");
   svg.innerHTML = "";
 

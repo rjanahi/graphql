@@ -8,7 +8,6 @@ document.getElementById("loginForm")
 async function handleLogin(e) {
   e.preventDefault();
 
-
   const user = document.getElementById("userOrEmail").value.trim();
   const pwd = document.getElementById("password").value;
 
