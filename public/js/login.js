@@ -16,14 +16,10 @@ document.getElementById("loginForm").addEventListener("submit", async e => {
         "Authorization": `Basic ${encoded}`
       }
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      return showError(err.error || "Invalid credentials");
-    }
+    // …
     const payload = await res.json();
     const jwt = payload.token;
-    if (!jwt) throw new Error("No token in response");
-    console.log("JWT:", jwt);
+    // …
     localStorage.setItem("jwt", jwt);
     window.location.href = "profile.html";
   } catch {

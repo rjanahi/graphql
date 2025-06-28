@@ -136,7 +136,7 @@ async function loadProfile() {
   const totalXP = xpProgressionData.at(-1)?.total || 0;
   document.getElementById("totalXp").textContent = `${(totalXP / 1000).toFixed(1)} KB`;
 
-  drawDoneReceivedChart(auditUser.totalUp, auditUser.totalDown, auditUser.auditRatio);
+  drawDoneRecievedChart(auditUser.totalUp, auditUser.totalDown, auditUser.auditRatio);
   drawXpTable(mergedData);
   drawXpProgression(xpProgressionData);
 }
