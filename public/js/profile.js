@@ -1,32 +1,24 @@
 // profile.js
 
-// Environment variable or default GraphQL endpoint
-const GRAPHQL_URL = "https://learn.reboot01.com/graphiql";
+const GRAPHQL_URL = "https://<DOMAIN>/api/graphql-engine/v1/graphql";
 
-async function fetchGraphQL(query) {
+async function fetchGraphQL(query, variables = {}) {
   const token = localStorage.getItem("jwt");
-  if (!token) throw new Error("No JWT found; user not signed in");
+  if (!token) throw new Error("Not authenticated");
 
   const res = await fetch(GRAPHQL_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer " + token,
+      "Authorization": `Bearer ${token}`
     },
-    body: JSON.stringify({ query }),
+    body: JSON.stringify({ query, variables })
   });
 
-  if (!res.ok) {
-    console.error("GraphQL network error:", res.status, await res.text());
-    throw new Error("GraphQL request failed");
-  }
-
-  const json = await res.json();
-  if (json.errors) {
-    console.error("GraphQL errors:", json.errors);
-    throw new Error("GraphQL query returned errors");
-  }
-  return json;
+  if (!res.ok) throw new Error("GraphQL network error");
+  const { data, errors } = await res.json();
+  if (errors) throw new Error(errors.map(e => e.message).join("\n"));
+  return data;
 }
 
 let xpDataGlobal = []; // stored for table rendering
@@ -142,7 +134,7 @@ async function loadProfile() {
   document.getElementById("totalProjects").textContent = totalProject;
   document.getElementById("totalExcercises").textContent = totalExercise;
   const totalXP = xpProgressionData.at(-1)?.total || 0;
-  document.getElementById("totalXp").textContent = `${(totalXP/1000).toFixed(1)} KB`;
+  document.getElementById("totalXp").textContent = `${(totalXP / 1000).toFixed(1)} KB`;
 
   drawDoneReceivedChart(auditUser.totalUp, auditUser.totalDown, auditUser.auditRatio);
   drawXpTable(mergedData);
@@ -158,7 +150,7 @@ function drawXpTable(data) {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td style="padding:8px">${item.project}</td>
-      <td style="padding:8px">${item.amount/1000 < 1 ? item.amount + ' B' : (item.amount/1000).toFixed(1) + ' kB'}</td>
+      <td style="padding:8px">${item.amount / 1000 < 1 ? item.amount + ' B' : (item.amount / 1000).toFixed(1) + ' kB'}</td>
       <td style="padding:8px">${item.date}</td>
     `;
     tbody.appendChild(row);
@@ -369,7 +361,7 @@ function drawXpProgression(data) {
 
 function logout() {
   localStorage.removeItem("jwt");
-  window.location.href = "/index.html";
+  window.location.href = "index.html";
 }
 
 loadProfile();
