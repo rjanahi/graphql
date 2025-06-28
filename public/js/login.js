@@ -27,6 +27,7 @@ document.getElementById("loginForm").addEventListener("submit", async e => {
     } catch {
       jwt = text.replace(/^"(.*)"$/, "$1");
     }
+    console.log("JWT:", jwt);
     localStorage.setItem("jwt", jwt);
     window.location.href = "profile.html";
   } catch {
