@@ -7,7 +7,7 @@ document.getElementById("loginForm")
 
 async function handleLogin(e) {
   e.preventDefault();
-  clearError();
+
 
   const user = document.getElementById("userOrEmail").value.trim();
   const pwd = document.getElementById("password").value;
@@ -21,8 +21,12 @@ async function handleLogin(e) {
         "Content-Type": "application/json"
       }
     });
+
     if (!res.ok) {
-      // … handle 400/401 …
+      let errBody;
+      try { errBody = await res.json(); }
+      catch (_) { errBody = { error: await res.text() }; }
+      return showError(errBody.error || "Invalid credentials");
     }
 
     // 1) Get raw body
