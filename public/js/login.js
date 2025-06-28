@@ -4,7 +4,7 @@ const SIGNIN_URL = "https://<DOMAIN>/api/auth/signin";
 
 document.getElementById("loginForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const user = document.getElementById("userField").value.trim();
+  const user = document.getElementById("userOrEmail").value.trim();
   const pwd = document.getElementById("password").value;
   if (!user || !pwd) return showError("Both fields are required");
 
