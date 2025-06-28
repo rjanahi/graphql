@@ -102,12 +102,6 @@ async function drawXpTable() {
 
   xpDataGlobal = mergedData;
 
-  document.getElementById("totalProjects").textContent = totalProject;
-  document.getElementById("totalExcercises").textContent = totalExercise;
-
-  const totalXP = xpDataGlobal.at(-1)?.total || 0;
-  document.getElementById("totalXp").textContent = `${(totalXP / 1000).toFixed(1)} KB`;
-
   const data = mergedData;
   const tbody = document.querySelector("#xpTable tbody");
   tbody.innerHTML = "";
@@ -210,6 +204,12 @@ function drawXpProgression() {
       else if (entry.type === "exercise") totalExercise++;
       return { date: entry.date, total: cumulativeXP, createdAt: entry.createdAt };
     });
+
+  document.getElementById("totalProjects").textContent = totalProject;
+  document.getElementById("totalExcercises").textContent = totalExercise;
+
+  const totalXP = data.at(-1)?.total || 0;
+  document.getElementById("totalXp").textContent = `${(totalXP / 1000).toFixed(1)} KB`;
 
   const svg = document.getElementById("graph2");
   svg.innerHTML = "";
