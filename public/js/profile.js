@@ -22,7 +22,7 @@ async function loadProfile() {
   document.getElementById("totalXp").textContent = `${(totalXP / 1000).toFixed(1)} KB`;
 
   drawDoneRecievedChart(auditUser.totalUp, auditUser.totalDown, auditUser.auditRatio);
-  drawXpTable();
+  await drawXpTable();
   drawXpProgression();
 }
 
