@@ -1,42 +1,40 @@
-async function fetchData(query) {
-  const token = localStorage.getItem("jwt");
+// profile.js
 
-  const res = await fetch("http://localhost:8888/api/query", {
+// Environment variable or default GraphQL endpoint
+const GRAPHQL_URL = process.env.GRAPHQL_URL || "https://learn.reboot01.com/graphiql";
+
+async function fetchGraphQL(query) {
+  const token = localStorage.getItem("jwt");
+  if (!token) throw new Error("No JWT found; user not signed in");
+
+  const res = await fetch(GRAPHQL_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
+      "Authorization": "Bearer " + token,
     },
     body: JSON.stringify({ query }),
   });
 
-  return await res.json();
+  if (!res.ok) {
+    console.error("GraphQL network error:", res.status, await res.text());
+    throw new Error("GraphQL request failed");
+  }
+
+  const json = await res.json();
+  if (json.errors) {
+    console.error("GraphQL errors:", json.errors);
+    throw new Error("GraphQL query returned errors");
+  }
+  return json;
 }
-let xpDataGlobal = []; // to store full data
-let visibleRows = 10; // number of rows to initially show
 
+let xpDataGlobal = []; // stored for table rendering
+
+// Main profile loader
 async function loadProfile() {
-  // Queries
-  const userQuery = `{
-    user {
-      id
-      login
-      email
-      firstName
-      lastName
-    }
-  }`;
-
-  const auditRatioQuery = `{
-    user {
-      auditRatio
-      totalUp
-      totalDown
-    }
-  }`;
-
-  // Step 1: Get the oldest normal project date
-  const oldestResult = await fetchData(`{
+  // 1) Fetch oldest normal-project date
+  const oldestResult = await fetchGraphQL(`{
     transaction(
       where: {
         _and: [
@@ -51,12 +49,11 @@ async function loadProfile() {
       createdAt
     }
   }`);
-
   const oldestDate = oldestResult.data.transaction[0]?.createdAt;
   console.log("Oldest Project Date:", oldestDate);
 
-  // Step 2: Get normal projects (non-checkpoints)
-  const xpTableResult = await fetchData(`{
+  // 2) Fetch all normal projects
+  const xpTableResult = await fetchGraphQL(`{
     transaction(
       where: { 
         _and: [
@@ -69,10 +66,7 @@ async function loadProfile() {
     ) {
       amount
       createdAt
-      object {
-        name
-        type
-      }
+      object { name type }
     }
   }`);
 
@@ -81,14 +75,14 @@ async function loadProfile() {
     createdAt: new Date(tx.createdAt),
     date: new Date(tx.createdAt).toLocaleDateString(),
     project: tx.object?.name || "Unnamed",
-    type:tx.object?.type || "Untyped",
+    type: tx.object?.type || "Untyped"
   }));
+  console.log("Normal Projects:", normalProjects);
 
-  console.log("Normal:" , normalProjects)
-  // Step 3: Get checkpoints after oldest date
+  // 3) Fetch checkpoint projects after oldest date
   let checkpointProjects = [];
   if (oldestDate) {
-    const checkpointResult = await fetchData(`{
+    const checkpointResult = await fetchGraphQL(`{
       transaction(
         where: {
           _and: [
@@ -100,10 +94,7 @@ async function loadProfile() {
       ) {
         amount
         createdAt
-        object {
-          name
-          type
-        }
+        object { name type }
       }
     }`);
 
@@ -112,105 +103,64 @@ async function loadProfile() {
       createdAt: new Date(tx.createdAt),
       date: new Date(tx.createdAt).toLocaleDateString(),
       project: tx.object?.name || "Unnamed",
-      type: tx.object?.type||"Untyped",
+      type: tx.object?.type || "Untyped"
     }));
   }
 
-  // Step 4: Merge and sort both datasets
-  const mergedData = [...normalProjects, ...checkpointProjects].sort(
-    (a, b) => b.createdAt - a.createdAt
-  );
+  // 4) Merge & sort
+  const mergedData = [...normalProjects, ...checkpointProjects]
+    .sort((a, b) => b.createdAt - a.createdAt);
+  console.log("Merged XP Data:", mergedData);
 
-  console.log("Merged XP Table:", mergedData);
-
-  // Step 5: Get user data and audit stats
-  const [userData, auditData] = await Promise.all([
-    fetchData(userQuery),
-    fetchData(auditRatioQuery),
+  // 5) Fetch user & audit stats in parallel
+  const [userRes, auditRes] = await Promise.all([
+    fetchGraphQL(`{ user { id login email firstName lastName } }`),
+    fetchGraphQL(`{ user { auditRatio totalUp totalDown } }`)
   ]);
 
-  const user = userData.data.user[0];
-  const auditUser = auditData.data.user[0];
+  const user = userRes.data.user[0];
+  const auditUser = auditRes.data.user[0];
 
-  // Step 6: XP progression calculation
+  // 6) Calculate XP progression & counts
   let cumulativeXP = 0;
-  let totalProject =0;
-  let totalExercise =0;
+  let totalProject = 0;
+  let totalExercise = 0;
+
   const xpProgressionData = mergedData
-    .slice() // clone array
-    .sort((a, b) => a.createdAt - b.createdAt) // sort oldest -> newest
-    .map((entry) => {
+    .slice()
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .map(entry => {
       cumulativeXP += entry.amount;
-      if (entry.type == "project"||entry.type == "piscine"){
-        totalProject++
-      }else if(entry.type == "exercise"){
-        totalExercise++
-      }
-      console.log(entry.type);
-      return {
-        date: entry.date,
-        total: cumulativeXP,
-        createdAt: entry.createdAt,
-      };
+      if (entry.type === "project" || entry.type === "piscine") totalProject++;
+      else if (entry.type === "exercise") totalExercise++;
+      return { date: entry.date, total: cumulativeXP, createdAt: entry.createdAt };
     });
 
-  // const totalProject = mergedData.length;
-  console.log("Total Projects:", totalProject);
-  console.log("Total Exercise:", totalExercise);
-
-  // Step 7: Update DOM
-  
-  document.getElementById("totalProjects").innerHTML = totalProject;
-  document.getElementById("totalExcercises").innerHTML = totalExercise;
-  document.getElementById("fullName").innerHTML = `Welcome, ${user.firstName} ${user.lastName}!`;
-  document.getElementById("username").innerHTML = `#${user.login}`;
-
+  // 7) Update DOM
+  document.getElementById("fullName").textContent = `Welcome, ${user.firstName} ${user.lastName}!`;
+  document.getElementById("username").textContent = `#${user.login}`;
+  document.getElementById("totalProjects").textContent = totalProject;
+  document.getElementById("totalExcercises").textContent = totalExercise;
   const totalXP = xpProgressionData.at(-1)?.total || 0;
-  document.getElementById("totalXp").innerHTML = `${(totalXP / 1000).toFixed(1)} KB`;
+  document.getElementById("totalXp").textContent = `${(totalXP/1000).toFixed(1)} KB`;
 
-  const totalUp = auditUser.totalUp || 0;
-  const totalDown = auditUser.totalDown || 0;
-  const totalRatio = auditUser.auditRatio || 0;
-
-  console.log("Total Up:", totalUp);
-  console.log("Total Down:", totalDown);
-
-  // Step 8: Draw charts/tables
-  drawDoneRecievedChart(totalUp, totalDown, totalRatio);
+  drawDoneReceivedChart(auditUser.totalUp, auditUser.totalDown, auditUser.auditRatio);
   drawXpTable(mergedData);
   drawXpProgression(xpProgressionData);
 }
 
-
+/** Table rendering **/
 function drawXpTable(data) {
-  xpDataGlobal = data; // save all data
-  renderXpRows();
-}
-
-function renderXpRows() {
-  const tbody = document.getElementById("xpTable").querySelector("tbody");
-  tbody.innerHTML = ""; // clear table
-
-  const slicedData = xpDataGlobal;
-  slicedData.forEach((item) => {
+  xpDataGlobal = data;
+  const tbody = document.querySelector("#xpTable tbody");
+  tbody.innerHTML = "";
+  data.forEach(item => {
     const row = document.createElement("tr");
-
-    const projectCell = document.createElement("td");
-    projectCell.textContent = item.project || "Unknown";
-    projectCell.style.padding = "8px";
-
-    const xpCell = document.createElement("td");
-    const kb = item.amount / 1000;
-    xpCell.textContent = kb < 1 ? `${item.amount} B` : `${kb.toFixed(1)} kB`;
-    xpCell.style.padding = "8px";
-
-    const dateCell = document.createElement("td");
-    dateCell.textContent = item.date;
-    dateCell.style.padding = "8px";
-
-    row.appendChild(projectCell);
-    row.appendChild(xpCell);
-    row.appendChild(dateCell);
+    row.innerHTML = `
+      <td style="padding:8px">${item.project}</td>
+      <td style="padding:8px">${item.amount/1000 < 1 ? item.amount + ' B' : (item.amount/1000).toFixed(1) + ' kB'}</td>
+      <td style="padding:8px">${item.date}</td>
+    `;
     tbody.appendChild(row);
   });
 }
