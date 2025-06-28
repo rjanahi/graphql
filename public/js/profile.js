@@ -1,6 +1,6 @@
 // profile.js
 
-let xpDataGlobal = []; 
+let xpDataGlobal = [];
 let cumulativeXP = 0;
 let totalProject = 0;
 let totalExercise = 0;
@@ -16,10 +16,8 @@ async function loadProfile() {
 
   document.getElementById("fullName").textContent = `Welcome, ${user.firstName} ${user.lastName}!`;
   document.getElementById("username").textContent = `#${user.login}`;
-  document.getElementById("totalProjects").textContent = totalProject;
-  document.getElementById("totalExcercises").textContent = totalExercise;
-  const totalXP = xpDataGlobal.at(-1)?.total || 0;
-  document.getElementById("totalXp").textContent = `${(totalXP / 1000).toFixed(1)} KB`;
+
+
 
   drawDoneRecievedChart(auditUser.totalUp, auditUser.totalDown, auditUser.auditRatio);
   await drawXpTable();
@@ -101,7 +99,15 @@ async function drawXpTable() {
   const mergedData = [...normalProjects, ...checkpointProjects]
     .sort((a, b) => b.createdAt - a.createdAt);
   console.log("Merged XP Data:", mergedData);
+
   xpDataGlobal = mergedData;
+
+  document.getElementById("totalProjects").textContent = totalProject;
+  document.getElementById("totalExcercises").textContent = totalExercise;
+
+  const totalXP = xpDataGlobal.at(-1)?.total || 0;
+  document.getElementById("totalXp").textContent = `${(totalXP / 1000).toFixed(1)} KB`;
+
   const data = mergedData;
   const tbody = document.querySelector("#xpTable tbody");
   tbody.innerHTML = "";
