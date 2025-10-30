@@ -360,9 +360,9 @@ function drawDoneRecievedChart(gave, received, ratioT) {
   // Ratio Text
   const roundedRatio = (ratioT || 0).toFixed(1);
   let message = "You can do better!";
-  if (ratioT > 1.1) {
+  if (ratioT > 1.3) {
     message = "Great job!"
-  } else if (ratioT > 1.3) {
+  } else if (ratioT > 1.1) {
     message = "Looking good!"
 
   }
