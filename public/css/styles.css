@@ -200,7 +200,7 @@ h2,
 
 }
 
-h1,p,li{
+h1,p,li,strong,pre,code{
   color: #a26cb8;
 }
 
