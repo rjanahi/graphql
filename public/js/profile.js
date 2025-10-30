@@ -299,79 +299,162 @@ function drawXpBarChart(entries) {
 function drawDoneRecievedChart(gave, received, ratioT) {
   const svg = document.getElementById("graph3");
   const ratioText = document.getElementById("ratio");
-  const xOffset = 23;
   svg.innerHTML = "";
 
-  const width = 400;
-  const barHeight = 10;
-  const gap = 40;
-  const maxVal = Math.max(gave, received, 1);
-  const barScale = 250 / maxVal;
+  const size = 240;
+  const center = size / 2;
+  const outerRadius = center - 12;
+  const innerRadius = outerRadius - 45;
+  const svgNS = "http://www.w3.org/2000/svg";
 
-  svg.setAttribute("width", width);
-  svg.setAttribute("height", 2 * gap);
+  svg.setAttribute("width", size);
+  svg.setAttribute("height", size);
+  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
 
   const data = [
-    { label: "Done", value: gave, color: "#007bff", arrow: "↑" },
-    { label: "Received", value: received, color: "rgb(167, 84, 140)", arrow: "↓" },
+    { label: "Done", value: Math.max(0, gave), color: "#007bff" },
+    { label: "Received", value: Math.max(0, received), color: "rgb(167, 84, 140)" },
   ];
 
-  data.forEach((item, i) => {
-    const y = i * gap;
+  const total = data.reduce((sum, item) => sum + item.value, 0);
 
-    // Label
-    const label = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "text"
-    );
-    label.setAttribute("x", 0);
-    label.setAttribute("y", y + barHeight + 5);
-    label.setAttribute("fill", "#fff");
-    label.setAttribute("font-size", "14px");
-    label.setAttribute("font-family", "sans-serif");
-    label.textContent = item.label;
-    svg.appendChild(label);
+  if (total === 0) {
+    const placeholder = document.createElementNS(svgNS, "circle");
+    placeholder.setAttribute("cx", center);
+    placeholder.setAttribute("cy", center);
+    placeholder.setAttribute("r", outerRadius);
+    placeholder.setAttribute("fill", "#1f1f1f");
+    placeholder.setAttribute("stroke", "#333");
+    placeholder.setAttribute("stroke-width", 2);
+    svg.appendChild(placeholder);
 
-    // Bar
-    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute("x", 80);
-    rect.setAttribute("y", y);
-    rect.setAttribute("width", Math.round(item.value * barScale));
-    rect.setAttribute("height", barHeight);
-    rect.setAttribute("fill", item.color);
-    svg.appendChild(rect);
+    const noDataText = document.createElementNS(svgNS, "text");
+    noDataText.setAttribute("x", center);
+    noDataText.setAttribute("y", center);
+    noDataText.setAttribute("text-anchor", "middle");
+    noDataText.setAttribute("dominant-baseline", "middle");
+    noDataText.setAttribute("fill", "#ccc");
+    noDataText.setAttribute("font-size", "14px");
+    noDataText.textContent = "No audit data";
+    svg.appendChild(noDataText);
+  } else {
+    let currentAngle = -Math.PI / 2;
+    data.forEach((segment) => {
+      if (segment.value <= 0) {
+        return;
+      }
 
-    // Value in kB
-    const valueText = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "text"
-    );
-    valueText.setAttribute("x", width);
-    valueText.setAttribute("y", y + barHeight + 5);
-    valueText.setAttribute("fill", "#fff");
-    valueText.setAttribute("font-size", "14px");
-    valueText.setAttribute("font-family", "monospace");
-    valueText.setAttribute("text-anchor", "end");
-    const kb = Math.round(item.value / 1000);
-    valueText.textContent = `${kb} kB ${item.arrow}`;
-    svg.appendChild(valueText);
+      const sliceAngle = (segment.value / total) * Math.PI * 2;
+      const startAngle = currentAngle;
+      const endAngle = currentAngle + sliceAngle;
+      currentAngle = endAngle;
+
+      const path = document.createElementNS(svgNS, "path");
+      path.setAttribute("d", describeArc(center, center, outerRadius, innerRadius, startAngle, endAngle));
+      path.setAttribute("fill", segment.color);
+      svg.appendChild(path);
+
+      const midAngle = startAngle + sliceAngle / 2;
+      const textRadius = (innerRadius + outerRadius) / 2;
+      const label = document.createElementNS(svgNS, "text");
+      label.setAttribute("x", center + textRadius * Math.cos(midAngle));
+      label.setAttribute("y", center + textRadius * Math.sin(midAngle));
+      label.setAttribute("fill", "#fff");
+      label.setAttribute("font-size", "12px");
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("dominant-baseline", "middle");
+      label.textContent = `${Math.round((segment.value / total) * 100)}%`;
+      svg.appendChild(label);
+    });
+
+    const innerMask = document.createElementNS(svgNS, "circle");
+    innerMask.setAttribute("cx", center);
+    innerMask.setAttribute("cy", center);
+    innerMask.setAttribute("r", innerRadius);
+    innerMask.setAttribute("fill", "#0e0e0e");
+    innerMask.setAttribute("stroke", "#222");
+    innerMask.setAttribute("stroke-width", 2);
+    svg.appendChild(innerMask);
+
+    const centerLabel = document.createElementNS(svgNS, "text");
+    centerLabel.setAttribute("x", center);
+    centerLabel.setAttribute("y", center - 8);
+    centerLabel.setAttribute("text-anchor", "middle");
+    centerLabel.setAttribute("fill", "#fff");
+    centerLabel.setAttribute("font-size", "18px");
+    centerLabel.textContent = `${Math.round((data[0].value / total) * 100)}%`;
+    svg.appendChild(centerLabel);
+
+    const centerSubLabel = document.createElementNS(svgNS, "text");
+    centerSubLabel.setAttribute("x", center);
+    centerSubLabel.setAttribute("y", center + 12);
+    centerSubLabel.setAttribute("text-anchor", "middle");
+    centerSubLabel.setAttribute("fill", "#aaa");
+    centerSubLabel.setAttribute("font-size", "12px");
+    centerSubLabel.textContent = "Done";
+    svg.appendChild(centerSubLabel);
+  }
+
+  const legendY = size - 18;
+  data.forEach((segment, index) => {
+    const offsetX = 20 + index * 120;
+
+    const swatch = document.createElementNS(svgNS, "rect");
+    swatch.setAttribute("x", offsetX);
+    swatch.setAttribute("y", legendY - 10);
+    swatch.setAttribute("width", 12);
+    swatch.setAttribute("height", 12);
+    swatch.setAttribute("rx", 2);
+    swatch.setAttribute("fill", segment.color);
+    svg.appendChild(swatch);
+
+    const legendText = document.createElementNS(svgNS, "text");
+    legendText.setAttribute("x", offsetX + 18);
+    legendText.setAttribute("y", legendY);
+    legendText.setAttribute("fill", "#fff");
+    legendText.setAttribute("font-size", "12px");
+    legendText.setAttribute("dominant-baseline", "middle");
+    legendText.textContent = `${segment.label}: ${formatXp(segment.value)}`;
+    svg.appendChild(legendText);
   });
 
-  // Ratio Text
   const roundedRatio = (ratioT || 0).toFixed(1);
   let message = "You can do better!";
   if (ratioT > 1.3) {
-    message = "Great job!"
+    message = "Great job!";
   } else if (ratioT > 1.1) {
-    message = "Looking good!"
-
+    message = "Looking good!";
   }
 
   ratioText.innerHTML = `
     <span style="font-size: 48px; color:rgb(255, 255, 255);">${roundedRatio}</span><br>
     <span style="color:rgb(255, 255, 255); font-size: 16px;">${message}</span>
   `;
+
+  function describeArc(cx, cy, outerR, innerR, startAngle, endAngle) {
+    const outerStart = pointOnCircle(cx, cy, outerR, startAngle);
+    const outerEnd = pointOnCircle(cx, cy, outerR, endAngle);
+    const innerStart = pointOnCircle(cx, cy, innerR, endAngle);
+    const innerEnd = pointOnCircle(cx, cy, innerR, startAngle);
+    const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+
+    return [
+      `M ${outerStart.x} ${outerStart.y}`,
+      `A ${outerR} ${outerR} 0 ${largeArcFlag} 1 ${outerEnd.x} ${outerEnd.y}`,
+      `L ${innerStart.x} ${innerStart.y}`,
+      `A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${innerEnd.x} ${innerEnd.y}`,
+      "Z",
+    ].join(" ");
+  }
+
+  function pointOnCircle(cx, cy, radius, angle) {
+    return {
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle),
+    };
+  }
 }
+
 
 function drawXpProgression() {
   const data = xpDataGlobal

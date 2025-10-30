@@ -38,12 +38,6 @@
           </ul>
         </div>
         <div>
-          <strong>Backend</strong>
-          <ul class="list">
-            <li>Go (Golang) server (project requirement)</li>
-            <li>GraphQL endpoint: <code>https://learn.reboot01.com/api/graphql-engine/v1/graphql</code></li>
-            <li>Bearer authentication</li>
-          </ul>
         </div>
       </div>
     </section>
@@ -56,51 +50,54 @@
       <ul class="list">
         <li>Login with JWT, graceful error handling for invalid credentials</li>
         <li>Three required profile sections sourced directly from GraphQL</li>
-        <li>SVG charts: XP by Activity (bar), XP Progression (line), and Audit Ratio (bars)</li>
+        <li>SVG charts: XP by Activity (bar), XP Progression (line), and Audit Ratio (Pie)</li>
         <li>Logout clears auth and returns to login</li>
-        <li>Reusable <code>fetchGraphQL()</code> helper for typed queries</li>
       </ul>
     </section>
 
     <div style="height:1rem"></div>
 
-    <!-- 4) GraphQL Info -->
+    <!-- 4) GraphQL queries -->
     <section class="card" aria-labelledby="graphql">
-      <h2 id="graphql">4) GraphQL Info</h2>
-      <p>The page primarily runs three queries. You can copy and test them in GraphiQL (uses your stored JWT).</p>
+      <h2 id="graphql">4) GraphQL queries</h2>
+      <p>Types of queries used in the project:</p>
 
-      <strong>User basics</strong>
-      <pre><code>query Me {
-  user {
-    id
-    login
-    email
-    firstName
-    lastName
-  }
-}</code></pre>
+      <strong>Normal</strong>
+      <pre><code>{ user { id login email firstName lastName } }</code></pre>
 
-      <strong>Audit ratio</strong>
-      <pre><code>query Audit {
-  user {
-    auditRatio
-    totalUp
-    totalDown
-  }
-}</code></pre>
+      <strong>Nested</strong>
+      <pre><code>{
+      transaction(
+        where: {
+          _and: [
+            { type: { _eq: "xp" } },
+            { path: { _like: "/bahrain/bh-module/checkpoint/%" } },
+            { createdAt: { _gt: "${oldestDate}" } }
+          ]
+        }
+      ) {
+        amount
+        createdAt
+        object { name type }
+      }
+    }</code></pre>
 
-      <strong>XP transactions (filtered)</strong>
-      <pre><code>query Xp {
-  transaction(
-    where: { type: { _eq: "xp" }, path: { _like: "/bahrain/bh-module/%" } }
-    order_by: { createdAt: asc }
-    limit: 1000
-  ) {
-    amount
-    createdAt
-    object { name type path }
-  }
-}</code></pre>
+      <strong>arguments</strong>
+      <pre><code>{
+    transaction(
+      where: {
+        _and: [
+          { type: { _eq: "xp" } },
+          { path: { _like: "/bahrain/bh-module/%" } },
+          { path: { _nlike: "/bahrain/bh-module/checkpoint/%" } }
+        ]
+      },
+      order_by: { createdAt: asc },
+      limit: 1
+    ) {
+      createdAt
+    }
+  }</code></pre>
 
     </section>
 
