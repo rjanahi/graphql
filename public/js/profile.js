@@ -123,8 +123,8 @@ function drawXpBarChart(entries) {
   if (!svg) return;
 
   const legend = document.getElementById("xpBarLegend");
-  const projectColor = "#4caf50";
-  const exerciseColor = "#ff9800";
+  const projectColor = "#007bff";
+  const exerciseColor = "#a26cb8";
   const fallbackColor = "#607d8b";
 
   if (legend) {
