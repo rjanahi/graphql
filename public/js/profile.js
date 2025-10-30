@@ -24,6 +24,14 @@ async function loadProfile() {
   drawXpProgression();
 }
 
+function formatXp(amount) {
+  if (amount < 1000) {
+    return `${Math.round(amount)} B`;
+  }
+  const kb = amount / 1000;
+  return kb >= 100 ? `${Math.round(kb)} kB` : `${kb.toFixed(1)} kB`;
+}
+
 async function drawXpTable() {
   const oldestResult = await fetchGraphQL(`{
     transaction(
@@ -109,7 +117,7 @@ async function drawXpTable() {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td style="padding:8px">${item.project}</td>
-      <td style="padding:8px">${item.amount / 1000 < 1 ? item.amount + ' B' : (item.amount / 1000).toFixed(1) + ' kB'}</td>
+      <td style="padding:8px">${formatXp(item.amount)}</td>
       <td style="padding:8px">${item.date}</td>
     `;
     tbody.appendChild(row);
@@ -204,7 +212,7 @@ function drawXpBarChart(entries) {
     label.setAttribute("font-size", "12px");
     label.setAttribute("fill", "#ccc");
     label.setAttribute("text-anchor", "end");
-    label.textContent = `${(value / 1000).toFixed(1)} kB`;
+    label.textContent = formatXp(value);
     svg.appendChild(label);
   }
 
@@ -253,9 +261,7 @@ function drawXpBarChart(entries) {
       "http://www.w3.org/2000/svg",
       "title"
     );
-    tooltip.textContent = `${item.project}: ${(item.total / 1000).toFixed(
-      1
-    )} kB`;
+    tooltip.textContent = `${item.project}: ${formatXp(item.total)}`;
     rect.appendChild(tooltip);
 
     const valueText = document.createElementNS(
@@ -267,7 +273,7 @@ function drawXpBarChart(entries) {
     valueText.setAttribute("text-anchor", "middle");
     valueText.setAttribute("font-size", "12px");
     valueText.setAttribute("fill", "#ccc");
-    valueText.textContent = `${(item.total / 1000).toFixed(1)} kB`;
+    valueText.textContent = formatXp(item.total);
     svg.appendChild(valueText);
 
     const label = document.createElementNS(
