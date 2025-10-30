@@ -139,7 +139,7 @@ function drawXpBarChart(entries) {
     legend.innerHTML = `
       <span class="legend-item"><span class="legend-swatch" style="background:${projectColor}"></span>Project</span>
       <span class="legend-item"><span class="legend-swatch" style="background:${exerciseColor}"></span>Exercise</span>
-      <span class="legend-item"><span class="legend-swatch" style="background:${fallbackColor}"></span>Other</span>
+      <span class="legend-item"><span class="legend-swatch" style="ackground:${fallbackColor}"></span>Other</span>
     `;
   }
 
