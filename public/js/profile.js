@@ -386,7 +386,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
     legendText.setAttribute("fill", "#fff");
     legendText.setAttribute("font-size", "12px");
     legendText.setAttribute("dominant-baseline", "middle");
-    legendText.textContent = segment.label + ": " + formatXp(segment.value);
+    legendText.textContent = segment.label;
     svg.appendChild(legendText);
   });
 
