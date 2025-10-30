@@ -133,12 +133,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
 
   const data = [
     { label: "Done", value: gave, color: "#007bff", arrow: "↑" },
-    {
-      label: "Received",
-      value: received,
-      color: "rgb(167, 84, 140)",
-      arrow: "↓",
-    },
+    { label: "Received", value: received, color: "rgb(167, 84, 140)", arrow: "↓" },
   ];
 
   data.forEach((item, i) => {
@@ -161,7 +156,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     rect.setAttribute("x", 100);
     rect.setAttribute("y", y);
-    rect.setAttribute("width", item.value * barScale);
+    rect.setAttribute("width", Math.round(item.value * barScale));
     rect.setAttribute("height", barHeight);
     rect.setAttribute("fill", item.color);
     svg.appendChild(rect);
@@ -185,8 +180,12 @@ function drawDoneRecievedChart(gave, received, ratioT) {
   // Ratio Text
   const roundedRatio = (ratioT || 0).toFixed(1);
   let message = "You can do better!";
-  if (ratioT > 1.3) message = "Great job!";
-  else if (ratioT > 1.1) message = "Looking good!";
+  if (ratioT > 1.1) {
+    message = "Great job!"
+  } else if (ratioT > 1.3) {
+    message = "Looking good!"
+
+  }
 
   ratioText.innerHTML = `
     <span style="font-size: 48px; color:rgb(255, 255, 255);">${roundedRatio}</span><br>
@@ -245,7 +244,7 @@ function drawXpProgression() {
       "http://www.w3.org/2000/svg",
       "text"
     );
-    label.setAttribute("x", padding - 10);
+    label.setAttribute("x", padding );
     label.setAttribute("y", y + 5);
     label.setAttribute("text-anchor", "end");
     label.setAttribute("font-size", "12px");
@@ -275,11 +274,14 @@ function drawXpProgression() {
     const x = padding + i * xScale;
     const y = height - padding - data[i].total * yScale;
     if (i === 0) {
+      //M = moveto (move from one point to another point)
       pathD += `M ${x},${y}`;
     } else {
       const prevX = padding + (i - 1) * xScale;
       const prevY = height - padding - data[i - 1].total * yScale;
       const cx = (prevX + x) / 2;
+      //Q = quadratic Bézier curve (create a quadratic Bézier curve)
+      //T = smooth quadratic Bézier curveto (create a smooth quadratic Bézier curve)
       pathD += ` Q ${prevX},${prevY} ${cx},${(prevY + y) / 2}`;
       pathD += ` T ${x},${y}`;
     }
@@ -326,7 +328,7 @@ function drawXpProgression() {
 
   // Y axis line
   const yAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
-  yAxis.setAttribute("x1", padding);
+  yAxis.setAttribute("x1", padding );
   yAxis.setAttribute("y1", padding);
   yAxis.setAttribute("x2", padding);
   yAxis.setAttribute("y2", height - padding);
