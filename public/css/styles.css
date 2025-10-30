@@ -206,12 +206,12 @@ li,
 strong,
 pre,
 code {
-  color: #a26cb8;
+  color: #d46dcc;
 }
 
 .container {
   text-align: center;
-  display: ruby;
+  width: min-content;
 }
 
 .error-message a {
