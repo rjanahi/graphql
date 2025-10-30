@@ -200,6 +200,10 @@ h2,
 
 }
 
+h1,p{
+  color: #a26cb8;
+}
+
 .error-message a {
   color: #007bff;
 
