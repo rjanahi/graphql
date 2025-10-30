@@ -114,6 +114,180 @@ async function drawXpTable() {
     `;
     tbody.appendChild(row);
   });
+
+  drawXpBarChart(data);
+}
+
+function drawXpBarChart(entries) {
+  const svg = document.getElementById("xpBarChart");
+  if (!svg) return;
+
+  const legend = document.getElementById("xpBarLegend");
+  const projectColor = "#4caf50";
+  const exerciseColor = "#ff9800";
+  const fallbackColor = "#607d8b";
+
+  if (legend) {
+    legend.innerHTML = `
+      <span class="legend-item"><span class="legend-swatch" style="background:${projectColor}"></span>Project</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:${exerciseColor}"></span>Exercise</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:${fallbackColor}"></span>Other</span>
+    `;
+  }
+
+  svg.innerHTML = "";
+
+  if (!entries || entries.length === 0) {
+    return;
+  }
+
+  const aggregated = new Map();
+  entries.forEach((entry) => {
+    const key = entry.project;
+    const type = (entry.type || "other").toLowerCase();
+    if (!aggregated.has(key)) {
+      aggregated.set(key, { project: key, total: 0, type });
+    }
+    const record = aggregated.get(key);
+    record.total += entry.amount;
+    if (type !== "untyped" && type !== "other") {
+      record.type = type;
+    }
+  });
+
+  const data = Array.from(aggregated.values());
+  if (!data.length) {
+    return;
+  }
+
+  const width = Math.max(600, data.length * 80);
+  const height = 360;
+  svg.setAttribute("width", width);
+  svg.setAttribute("height", height);
+
+  const margin = { top: 20, right: 30, bottom: 120, left: 80 };
+  const chartWidth = width - margin.left - margin.right;
+  const chartHeight = height - margin.top - margin.bottom;
+  const maxValue = Math.max(...data.map((d) => d.total), 1);
+  const step = chartWidth / data.length;
+
+  const colorByType = {
+    project: projectColor,
+    piscine: projectColor,
+    exercise: exerciseColor,
+  };
+
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const value = (maxValue / ticks) * i;
+    const y =
+      height - margin.bottom - (value / maxValue) * chartHeight;
+
+    const gridLine = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "line"
+    );
+    gridLine.setAttribute("x1", margin.left);
+    gridLine.setAttribute("y1", y);
+    gridLine.setAttribute("x2", width - margin.right);
+    gridLine.setAttribute("y2", y);
+    gridLine.setAttribute("stroke", "#333");
+    gridLine.setAttribute("stroke-dasharray", "4 2");
+    svg.appendChild(gridLine);
+
+    const label = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "text"
+    );
+    label.setAttribute("x", margin.left - 12);
+    label.setAttribute("y", y + 4);
+    label.setAttribute("font-size", "12px");
+    label.setAttribute("fill", "#ccc");
+    label.setAttribute("text-anchor", "end");
+    label.textContent = `${(value / 1000).toFixed(1)} kB`;
+    svg.appendChild(label);
+  }
+
+  const axisX = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "line"
+  );
+  axisX.setAttribute("x1", margin.left);
+  axisX.setAttribute("y1", height - margin.bottom);
+  axisX.setAttribute("x2", width - margin.right);
+  axisX.setAttribute("y2", height - margin.bottom);
+  axisX.setAttribute("stroke", "#555");
+  svg.appendChild(axisX);
+
+  const axisY = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "line"
+  );
+  axisY.setAttribute("x1", margin.left);
+  axisY.setAttribute("y1", margin.top);
+  axisY.setAttribute("x2", margin.left);
+  axisY.setAttribute("y2", height - margin.bottom);
+  axisY.setAttribute("stroke", "#555");
+  svg.appendChild(axisY);
+
+  data.forEach((item, index) => {
+    const barHeight = (item.total / maxValue) * chartHeight;
+    const barWidth = step * 0.7;
+    const x =
+      margin.left + index * step + (step - barWidth) / 2;
+    const y = height - margin.bottom - barHeight;
+    const color = colorByType[item.type] || fallbackColor;
+
+    const rect = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "rect"
+    );
+    rect.setAttribute("x", x);
+    rect.setAttribute("y", y);
+    rect.setAttribute("width", barWidth);
+    rect.setAttribute("height", barHeight);
+    rect.setAttribute("fill", color);
+    svg.appendChild(rect);
+
+    const tooltip = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "title"
+    );
+    tooltip.textContent = `${item.project}: ${(item.total / 1000).toFixed(
+      1
+    )} kB`;
+    rect.appendChild(tooltip);
+
+    const valueText = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "text"
+    );
+    valueText.setAttribute("x", x + barWidth / 2);
+    valueText.setAttribute("y", y - 6);
+    valueText.setAttribute("text-anchor", "middle");
+    valueText.setAttribute("font-size", "12px");
+    valueText.setAttribute("fill", "#ccc");
+    valueText.textContent = `${(item.total / 1000).toFixed(1)} kB`;
+    svg.appendChild(valueText);
+
+    const label = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "text"
+    );
+    const labelX = margin.left + index * step + step / 2;
+    const labelY = height - margin.bottom + 50;
+    label.setAttribute("x", labelX);
+    label.setAttribute("y", labelY);
+    label.setAttribute("font-size", "12px");
+    label.setAttribute("fill", "#ccc");
+    label.setAttribute("text-anchor", "end");
+    label.setAttribute(
+      "transform",
+      `rotate(-45 ${labelX} ${labelY})`
+    );
+    label.textContent = item.project;
+    svg.appendChild(label);
+  });
 }
 
 function drawDoneRecievedChart(gave, received, ratioT) {
