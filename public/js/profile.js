@@ -166,7 +166,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
       "http://www.w3.org/2000/svg",
       "text"
     );
-    valueText.setAttribute("x", width - 10 + xOffset);
+    valueText.setAttribute("x", width);
     valueText.setAttribute("y", y + barHeight + 5);
     valueText.setAttribute("fill", "#fff");
     valueText.setAttribute("font-size", "14px");
