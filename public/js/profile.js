@@ -303,13 +303,12 @@ function drawDoneRecievedChart(gave, received, ratioT) {
 
   const size = 240;
   const center = size / 2;
-  const outerRadius = center - 12;
-  const innerRadius = outerRadius - 45;
+  const radius = center - 12;
   const svgNS = "http://www.w3.org/2000/svg";
 
   svg.setAttribute("width", size);
   svg.setAttribute("height", size);
-  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+  svg.setAttribute("viewBox", "0 0 " + size + " " + size);
 
   const data = [
     { label: "Done", value: Math.max(0, gave), color: "#007bff" },
@@ -322,7 +321,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
     const placeholder = document.createElementNS(svgNS, "circle");
     placeholder.setAttribute("cx", center);
     placeholder.setAttribute("cy", center);
-    placeholder.setAttribute("r", outerRadius);
+    placeholder.setAttribute("r", radius);
     placeholder.setAttribute("fill", "#1f1f1f");
     placeholder.setAttribute("stroke", "#333");
     placeholder.setAttribute("stroke-width", 2);
@@ -350,54 +349,27 @@ function drawDoneRecievedChart(gave, received, ratioT) {
       currentAngle = endAngle;
 
       const path = document.createElementNS(svgNS, "path");
-      path.setAttribute("d", describeArc(center, center, outerRadius, innerRadius, startAngle, endAngle));
+      path.setAttribute("d", describeSlice(center, center, radius, startAngle, endAngle));
       path.setAttribute("fill", segment.color);
       svg.appendChild(path);
 
       const midAngle = startAngle + sliceAngle / 2;
-      const textRadius = (innerRadius + outerRadius) / 2;
+      const labelRadius = radius * 0.6;
       const label = document.createElementNS(svgNS, "text");
-      label.setAttribute("x", center + textRadius * Math.cos(midAngle));
-      label.setAttribute("y", center + textRadius * Math.sin(midAngle));
+      label.setAttribute("x", center + labelRadius * Math.cos(midAngle));
+      label.setAttribute("y", center + labelRadius * Math.sin(midAngle));
       label.setAttribute("fill", "#fff");
-      label.setAttribute("font-size", "12px");
+      label.setAttribute("font-size", "14px");
       label.setAttribute("text-anchor", "middle");
       label.setAttribute("dominant-baseline", "middle");
-      label.textContent = `${Math.round((segment.value / total) * 100)}%`;
+      label.textContent = formatXp(segment.value);
       svg.appendChild(label);
     });
-
-    const innerMask = document.createElementNS(svgNS, "circle");
-    innerMask.setAttribute("cx", center);
-    innerMask.setAttribute("cy", center);
-    innerMask.setAttribute("r", innerRadius);
-    innerMask.setAttribute("fill", "#0e0e0e");
-    innerMask.setAttribute("stroke", "#222");
-    innerMask.setAttribute("stroke-width", 2);
-    svg.appendChild(innerMask);
-
-    const centerLabel = document.createElementNS(svgNS, "text");
-    centerLabel.setAttribute("x", center);
-    centerLabel.setAttribute("y", center - 8);
-    centerLabel.setAttribute("text-anchor", "middle");
-    centerLabel.setAttribute("fill", "#fff");
-    centerLabel.setAttribute("font-size", "18px");
-    centerLabel.textContent = `${Math.round((data[0].value / total) * 100)}%`;
-    svg.appendChild(centerLabel);
-
-    const centerSubLabel = document.createElementNS(svgNS, "text");
-    centerSubLabel.setAttribute("x", center);
-    centerSubLabel.setAttribute("y", center + 12);
-    centerSubLabel.setAttribute("text-anchor", "middle");
-    centerSubLabel.setAttribute("fill", "#aaa");
-    centerSubLabel.setAttribute("font-size", "12px");
-    centerSubLabel.textContent = "Done";
-    svg.appendChild(centerSubLabel);
   }
 
   const legendY = size - 18;
   data.forEach((segment, index) => {
-    const offsetX = 20 + index * 120;
+    const offsetX = 30 + index * 120;
 
     const swatch = document.createElementNS(svgNS, "rect");
     swatch.setAttribute("x", offsetX);
@@ -414,7 +386,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
     legendText.setAttribute("fill", "#fff");
     legendText.setAttribute("font-size", "12px");
     legendText.setAttribute("dominant-baseline", "middle");
-    legendText.textContent = `${segment.label}: ${formatXp(segment.value)}`;
+    legendText.textContent = segment.label + ": " + formatXp(segment.value);
     svg.appendChild(legendText);
   });
 
@@ -431,26 +403,23 @@ function drawDoneRecievedChart(gave, received, ratioT) {
     <span style="color:rgb(255, 255, 255); font-size: 16px;">${message}</span>
   `;
 
-  function describeArc(cx, cy, outerR, innerR, startAngle, endAngle) {
-    const outerStart = pointOnCircle(cx, cy, outerR, startAngle);
-    const outerEnd = pointOnCircle(cx, cy, outerR, endAngle);
-    const innerStart = pointOnCircle(cx, cy, innerR, endAngle);
-    const innerEnd = pointOnCircle(cx, cy, innerR, startAngle);
+  function describeSlice(cx, cy, r, startAngle, endAngle) {
+    const start = pointOnCircle(cx, cy, r, startAngle);
+    const end = pointOnCircle(cx, cy, r, endAngle);
     const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
 
     return [
-      `M ${outerStart.x} ${outerStart.y}`,
-      `A ${outerR} ${outerR} 0 ${largeArcFlag} 1 ${outerEnd.x} ${outerEnd.y}`,
-      `L ${innerStart.x} ${innerStart.y}`,
-      `A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${innerEnd.x} ${innerEnd.y}`,
+      "M " + cx + " " + cy,
+      "L " + start.x + " " + start.y,
+      "A " + r + " " + r + " 0 " + largeArcFlag + " 1 " + end.x + " " + end.y,
       "Z",
     ].join(" ");
   }
 
-  function pointOnCircle(cx, cy, radius, angle) {
+  function pointOnCircle(cx, cy, r, angle) {
     return {
-      x: cx + radius * Math.cos(angle),
-      y: cy + radius * Math.sin(angle),
+      x: cx + r * Math.cos(angle),
+      y: cy + r * Math.sin(angle),
     };
   }
 }
