@@ -154,7 +154,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
 
     // Bar
     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute("x", 100);
+    rect.setAttribute("x", 80);
     rect.setAttribute("y", y);
     rect.setAttribute("width", Math.round(item.value * barScale));
     rect.setAttribute("height", barHeight);
