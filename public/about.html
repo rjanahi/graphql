@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — GraphQL Profile</title>
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    :root { --card-bg: #0b1020; --muted:#64748b; --ring:#e2e8f0; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial; }
+    .container { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+    header.top { display:flex; align-items:center; gap:12px; margin-bottom: 1.25rem; }
+    header.top a { margin-left: auto; text-decoration: none; color:#0ea5e9; }
+    .card { background: var(--card-bg); color: #e5e7eb; border-radius: 16px; padding: 1.25rem; box-shadow: 0 10px 30px rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.06); }
+    h1 { margin: 0 0 .5rem 0; font-size: 1.6rem; }
+    h2 { font-size: 1.2rem; margin: 0 0 .5rem 0; }
+    p { color: #cbd5e1; }
+    .grid { display:grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .list { margin: .25rem 0 0 1rem; color:#cbd5e1; }
+    pre { background:#0e1726; color:#e5e7eb; padding:12px; border-radius:12px; overflow:auto; border:1px solid rgba(255,255,255,.06); }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .links { display:flex; gap:.75rem; flex-wrap:wrap; }
+    .btn { display:inline-block; padding:.5rem .75rem; border-radius:.5rem; text-decoration:none; border:1px solid var(--ring); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="top">
+      <h1>About this Project</h1>
+      <a href="./index.html">Back to Login</a>
+    </header>
+
+    <!-- 1) Project Overview -->
+    <section class="card" aria-labelledby="overview">
+      <h2 id="overview">1) Project Overview</h2>
+      <p>
+        This is a minimal GraphQL Profile web app. After a successful login (JWT), it fetches your data from the
+        GraphQL API and renders a profile with three core sections (user info & totals, audit ratio, categorized XP)
+        plus a dedicated statistics area with SVG-based charts.
+      </p>
+    </section>
+
+    <div style="height:1rem"></div>
+
+    <!-- 2) Tech Stack -->
+    <section class="card" aria-labelledby="stack">
+      <h2 id="stack">2) Tech Stack</h2>
+      <div class="grid">
+        <div>
+          <strong>Frontend</strong>
+          <ul class="list">
+            <li>Vanilla HTML, CSS, JavaScript</li>
+            <li>SVG for charts (no external chart libs)</li>
+            <li>JWT stored in <code>localStorage</code></li>
+          </ul>
+        </div>
+        <div>
+          <strong>Backend</strong>
+          <ul class="list">
+            <li>Go (Golang) server (project requirement)</li>
+            <li>GraphQL endpoint: <code>https://learn.reboot01.com/api/graphql-engine/v1/graphql</code></li>
+            <li>Bearer authentication</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div style="height:1rem"></div>
+
+    <!-- 3) Features -->
+    <section class="card" aria-labelledby="features">
+      <h2 id="features">3) Features</h2>
+      <ul class="list">
+        <li>Login with JWT, graceful error handling for invalid credentials</li>
+        <li>Three required profile sections sourced directly from GraphQL</li>
+        <li>SVG charts: XP by Activity (bar), XP Progression (line), and Audit Ratio (bars)</li>
+        <li>Logout clears auth and returns to login</li>
+        <li>Reusable <code>fetchGraphQL()</code> helper for typed queries</li>
+      </ul>
+    </section>
+
+    <div style="height:1rem"></div>
+
+    <!-- 4) GraphQL Info -->
+    <section class="card" aria-labelledby="graphql">
+      <h2 id="graphql">4) GraphQL Info</h2>
+      <p>The page primarily runs three queries. You can copy and test them in GraphiQL (uses your stored JWT).</p>
+
+      <strong>User basics</strong>
+      <pre><code>query Me {
+  user {
+    id
+    login
+    email
+    firstName
+    lastName
+  }
+}</code></pre>
+
+      <strong>Audit ratio</strong>
+      <pre><code>query Audit {
+  user {
+    auditRatio
+    totalUp
+    totalDown
+  }
+}</code></pre>
+
+      <strong>XP transactions (filtered)</strong>
+      <pre><code>query Xp {
+  transaction(
+    where: { type: { _eq: "xp" }, path: { _like: "/bahrain/bh-module/%" } }
+    order_by: { createdAt: asc }
+    limit: 1000
+  ) {
+    amount
+    createdAt
+    object { name type path }
+  }
+}</code></pre>
+
+    </section>
+
+    <div style="height:1rem"></div>
+
+   
+  </div>
+</body>
+</html>
