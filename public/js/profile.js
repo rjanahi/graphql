@@ -40,7 +40,6 @@ function formatRatio(amount) {
   return `${(Math.round(x * 100) / 100).toFixed(2)} MB`;
 }
 
-
 async function drawXpTable() {
   const oldestResult = await fetchGraphQL(`{
     transaction(
@@ -341,9 +340,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
     label.setAttribute("font-size", "14px");
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "middle");
-    //replace KB with MB
-    val = formatXp(segment.value).split("kB").join("MB");
-    label.textContent = val;
+    label.textContent = formatRatio(segment.value);
     svg.appendChild(label);
   });
 
