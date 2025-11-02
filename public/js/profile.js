@@ -131,15 +131,13 @@ function drawXpBarChart(entries) {
   if (!svg) return;
 
   const legend = document.getElementById("xpBarLegend");
-  const projectColor = "#007bff";
-  const exerciseColor = "#a26cb8";
+  const projectsColor = "#a26cb8";
   const fallbackColor = "#607d8b";
 
   if (legend) {
     legend.innerHTML = `
-      <span class="legend-item"><span class="legend-swatch" style="background:${projectColor}"></span>Project</span>
-      <span class="legend-item"><span class="legend-swatch" style="background:${exerciseColor}"></span>Exercise</span>
-      <span class="legend-item"><span class="legend-swatch" style="ackground:${fallbackColor}"></span>Other</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:${projectsColor}"></span>Project</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:${fallbackColor}"></span>Other</span>
     `;
   }
 
@@ -179,17 +177,10 @@ function drawXpBarChart(entries) {
   const maxValue = Math.max(...data.map((d) => d.total), 1);
   const step = chartWidth / data.length;
 
-  const colorByType = {
-    project: projectColor,
-    piscine: projectColor,
-    exercise: exerciseColor,
-  };
-
   const ticks = 5;
   for (let i = 0; i <= ticks; i++) {
     const value = (maxValue / ticks) * i;
-    const y =
-      height - margin.bottom - (value / maxValue) * chartHeight;
+    const y = height - margin.bottom - (value / maxValue) * chartHeight;
 
     const gridLine = document.createElementNS(
       "http://www.w3.org/2000/svg",
@@ -241,10 +232,9 @@ function drawXpBarChart(entries) {
   data.forEach((item, index) => {
     const barHeight = (item.total / maxValue) * chartHeight;
     const barWidth = step * 0.7;
-    const x =
-      margin.left + index * step + (step - barWidth) / 2;
+    const x = margin.left + index * step + (step - barWidth) / 2;
     const y = height - margin.bottom - barHeight;
-    const color = colorByType[item.type] || fallbackColor;
+    const color = projectsColor || fallbackColor;
 
     const rect = document.createElementNS(
       "http://www.w3.org/2000/svg",
@@ -307,7 +297,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
   const svgNS = "http://www.w3.org/2000/svg";
 
   svg.setAttribute("width", size);
-  svg.setAttribute("height", size);
+  svg.setAttribute("height", size + 20);
   svg.setAttribute("viewBox", "0 0 " + size + " " + size);
 
   const data = [
@@ -317,55 +307,35 @@ function drawDoneRecievedChart(gave, received, ratioT) {
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
-  if (total === 0) {
-    const placeholder = document.createElementNS(svgNS, "circle");
-    placeholder.setAttribute("cx", center);
-    placeholder.setAttribute("cy", center);
-    placeholder.setAttribute("r", radius);
-    placeholder.setAttribute("fill", "#1f1f1f");
-    placeholder.setAttribute("stroke", "#333");
-    placeholder.setAttribute("stroke-width", 2);
-    svg.appendChild(placeholder);
+  let currentAngle = -Math.PI / 2;
+  data.forEach((segment) => {
+    if (segment.value <= 0) {
+      return;
+    }
 
-    const noDataText = document.createElementNS(svgNS, "text");
-    noDataText.setAttribute("x", center);
-    noDataText.setAttribute("y", center);
-    noDataText.setAttribute("text-anchor", "middle");
-    noDataText.setAttribute("dominant-baseline", "middle");
-    noDataText.setAttribute("fill", "#ccc");
-    noDataText.setAttribute("font-size", "14px");
-    noDataText.textContent = "No audit data";
-    svg.appendChild(noDataText);
-  } else {
-    let currentAngle = -Math.PI / 2;
-    data.forEach((segment) => {
-      if (segment.value <= 0) {
-        return;
-      }
+    const sliceAngle = (segment.value / total) * Math.PI * 2;
+    const startAngle = currentAngle;
+    const endAngle = currentAngle + sliceAngle;
+    currentAngle = endAngle;
 
-      const sliceAngle = (segment.value / total) * Math.PI * 2;
-      const startAngle = currentAngle;
-      const endAngle = currentAngle + sliceAngle;
-      currentAngle = endAngle;
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute("d", describeSlice(center, center, radius, startAngle, endAngle));
+    path.setAttribute("fill", segment.color);
+    svg.appendChild(path);
 
-      const path = document.createElementNS(svgNS, "path");
-      path.setAttribute("d", describeSlice(center, center, radius, startAngle, endAngle));
-      path.setAttribute("fill", segment.color);
-      svg.appendChild(path);
+    const midAngle = startAngle + sliceAngle / 2;
+    const labelRadius = radius * 0.6;
+    const label = document.createElementNS(svgNS, "text");
+    label.setAttribute("x", center + labelRadius * Math.cos(midAngle));
+    label.setAttribute("y", center + labelRadius * Math.sin(midAngle));
+    label.setAttribute("fill", "#fff");
+    label.setAttribute("font-size", "14px");
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("dominant-baseline", "middle");
+    label.textContent = formatXp(segment.value);
+    svg.appendChild(label);
+  });
 
-      const midAngle = startAngle + sliceAngle / 2;
-      const labelRadius = radius * 0.6;
-      const label = document.createElementNS(svgNS, "text");
-      label.setAttribute("x", center + labelRadius * Math.cos(midAngle));
-      label.setAttribute("y", center + labelRadius * Math.sin(midAngle));
-      label.setAttribute("fill", "#fff");
-      label.setAttribute("font-size", "14px");
-      label.setAttribute("text-anchor", "middle");
-      label.setAttribute("dominant-baseline", "middle");
-      label.textContent = formatXp(segment.value);
-      svg.appendChild(label);
-    });
-  }
 
   const legendY = size - 18;
   data.forEach((segment, index) => {
@@ -373,7 +343,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
 
     const swatch = document.createElementNS(svgNS, "rect");
     swatch.setAttribute("x", offsetX);
-    swatch.setAttribute("y", legendY - 10);
+    swatch.setAttribute("y", legendY + 10);
     swatch.setAttribute("width", 12);
     swatch.setAttribute("height", 12);
     swatch.setAttribute("rx", 2);
@@ -382,7 +352,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
 
     const legendText = document.createElementNS(svgNS, "text");
     legendText.setAttribute("x", offsetX + 18);
-    legendText.setAttribute("y", legendY);
+    legendText.setAttribute("y", legendY + 20);
     legendText.setAttribute("fill", "#fff");
     legendText.setAttribute("font-size", "12px");
     legendText.setAttribute("dominant-baseline", "middle");
@@ -424,7 +394,6 @@ function drawDoneRecievedChart(gave, received, ratioT) {
   }
 }
 
-
 function drawXpProgression() {
   const data = xpDataGlobal
     .slice()
@@ -445,12 +414,12 @@ function drawXpProgression() {
   const svg = document.getElementById("graph2");
   svg.innerHTML = "";
 
-  const width = 700;
+  const width = 800;
   const height = 300;
   svg.setAttribute("width", width);
   svg.setAttribute("height", height);
 
-  const padding = 50;
+  const padding = 60;
 
   const maxXP = Math.max(...data.map((d) => d.total));
   const xScale = (width - 2 * padding) / (data.length - 1);
@@ -476,7 +445,7 @@ function drawXpProgression() {
       "http://www.w3.org/2000/svg",
       "text"
     );
-    label.setAttribute("x", padding );
+    label.setAttribute("x", padding-10);
     label.setAttribute("y", y + 5);
     label.setAttribute("text-anchor", "end");
     label.setAttribute("font-size", "12px");
@@ -486,13 +455,13 @@ function drawXpProgression() {
   }
 
   // X axis date labels
-  const dateInterval = Math.ceil(data.length / 6);
+  const dateInterval = Math.ceil(data.length / 10);
   data.forEach((d, i) => {
     if (i % dateInterval !== 0) return;
     const x = padding + i * xScale;
     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
     text.setAttribute("x", x);
-    text.setAttribute("y", height - padding + 20);
+    text.setAttribute("y", height - padding + 25);
     text.setAttribute("text-anchor", "middle");
     text.setAttribute("font-size", "12px");
     text.setAttribute("fill", "#555");
@@ -560,7 +529,7 @@ function drawXpProgression() {
 
   // Y axis line
   const yAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
-  yAxis.setAttribute("x1", padding );
+  yAxis.setAttribute("x1", padding);
   yAxis.setAttribute("y1", padding);
   yAxis.setAttribute("x2", padding);
   yAxis.setAttribute("y2", height - padding);
