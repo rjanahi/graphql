@@ -32,6 +32,15 @@ function formatXp(amount) {
   return kb >= 100 ? `${Math.round(kb)} kB` : `${kb.toFixed(1)} kB`;
 }
 
+function formatRatio(amount) {
+  if (amount < 1000) {
+    return `${(Math.round(amount * 100) / 100).toFixed(2)} MB`;
+  }
+  const x = amount / 1000;
+  return `${(Math.round(x * 100) / 100).toFixed(2)} MB`;
+}
+
+
 async function drawXpTable() {
   const oldestResult = await fetchGraphQL(`{
     transaction(
