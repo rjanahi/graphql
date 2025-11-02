@@ -332,7 +332,9 @@ function drawDoneRecievedChart(gave, received, ratioT) {
     label.setAttribute("font-size", "14px");
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "middle");
-    label.textContent = formatXp(segment.value);
+    //replace KB with MB
+    val = formatXp(segment.value).split("KB").join("MB");
+    label.textContent = val;
     svg.appendChild(label);
   });
 
