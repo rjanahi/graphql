@@ -34,10 +34,10 @@ function formatXp(amount) {
 
 function formatRatio(amount) {
   if (amount < 1000) {
-    return `${Math.round(amount/100).toFixed(2)} MB`;
+    return `${(Math.round(amount)/100).toFixed(2)} MB`;
   }
   const x = amount / 1000;
-  return `${Math.round(x/100).toFixed(2)} MB`;
+  return `${(Math.round(x)/100).toFixed(2)} MB`;
 }
 
 async function drawXpTable() {
