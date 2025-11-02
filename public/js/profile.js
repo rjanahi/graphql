@@ -333,7 +333,7 @@ function drawDoneRecievedChart(gave, received, ratioT) {
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "middle");
     //replace KB with MB
-    val = formatXp(segment.value).split("KB").join("MB");
+    val = formatXp(segment.value).split("kB").join("MB");
     label.textContent = val;
     svg.appendChild(label);
   });
